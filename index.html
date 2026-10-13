@@ -261,6 +261,7 @@ html.victory-active .fill{animation:victory-progress 3.5s ease-in-out}
 html[data-theme=dark] .dedication a:hover,html[data-theme=dark] .dedication a:focus-visible{color:#f08b9d}
 /* Somente a capa principal ocupa toda a largura no mobile; lista e controles mantêm as margens. */
 @media(max-width:700px){
+  html:not(.minimal) .wrap{padding-top:0}
   .wrap > .header{margin-left:-16px;margin-right:-16px;border-radius:0;border-left:0;border-right:0}
 }
 @media(max-width:380px){
