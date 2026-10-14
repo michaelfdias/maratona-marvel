@@ -14,7 +14,7 @@ Você pode:
 
 - Marcar filmes como vistos, acompanhar o progresso geral e por seção e marcar/desmarcar uma seção inteira.
 - Filtrar entre **MCU (40 filmes)**, **MCU + recomendados (52)** e **Todos (70)**.
-- Buscar por título ou ano, alternar entre a ordem sugerida e o agrupamento por ano de lançamento.
+- Buscar por título ou ano, alternar entre a ordem sugerida e o agrupamento por ano de lançamento. **O filtro e o texto buscado são lembrados após recarregar a página.**
 - Expandir ou recolher seções, consultar comentários e abrir sinopses.
 - Registrar datas de exibição e avaliar filmes de **1 a 5 estrelas**.
 - Escolher entre **Claro**, **Escuro** e **OLED (preto absoluto)**, além do idioma dos títulos, informações exibidas e modo minimalista.
