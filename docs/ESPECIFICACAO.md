@@ -1,7 +1,7 @@
 # Especificação viva — Maratona Marvel
 
 > **Documento de produto, engenharia, UX e evolução histórica**  
-> **Versão documental:** 1.0 · **Referência:** implementação em `main` consultada em 14/10/2026 · **Idioma:** português brasileiro  
+> **Versão documental:** 1.1 · **Referência:** implementação em `main` consultada em 14/10/2026 · **Idioma:** português brasileiro  
 > **Repositório original:** https://github.com/michaelfdias/maratona-marvel  
 > **Aplicação:** https://michaelfdias.github.io/maratona-marvel/  
 > **Público-alvo secundário:** desenvolvedores e agentes de programação (por exemplo, Claude Code) que precisam **reconstruir uma experiência funcionalmente equivalente**, sem depender de contexto de conversa.
@@ -88,13 +88,14 @@ Trata-se de uma aplicação estática com grande parte do HTML/CSS/JS **inline**
 | `/ordem-recomendada/index.html` | Metodologia de ordenação, blocos X-Men/Aranha/Deadpool e distinção entre filtros. |
 | `/privacidade/index.html` | Texto de política de privacidade sobre armazenamento, hospedagem e serviços externos. |
 | `/shared-footer.css` | **Fonte CSS compartilhada** para rodapé em todas as páginas e botão fixo de voltar ao topo. |
+| `/oled-theme.css` | Estilo OLED/True Black compartilhado pelas quatro páginas. |
 | `/back-to-top.js` | **Script compartilhado** para atalho de retorno ao início e preferência persistida. |
 | `/README.md` | Apresentação curta de uso e arquitetura. |
 | `/docs/ESPECIFICACAO.md` | Este documento; fonte de requisitos, decisões e reconstrução. |
 
 **Hospedagem:** GitHub Pages, com base de URLs sob `/maratona-marvel/`. **Analytics:** Cloudflare Web Analytics (beacon incluído nos documentos atuais). Sem base de dados de progresso, API proprietária ou registro de usuários.
 
-**Atenção ao executar localmente:** há caminhos **absolutos** para `/maratona-marvel/shared-footer.css`, `/maratona-marvel/back-to-top.js` e páginas internas. Abrir `index.html` via `file://` pode funcionar parcialmente, mas um teste fiel deve usar servidor HTTP/HTTPS com essa base, ou adaptar os caminhos a outra hospedagem.
+**Atenção ao executar localmente:** há caminhos **absolutos** para `/maratona-marvel/shared-footer.css`, `/maratona-marvel/oled-theme.css`, `/maratona-marvel/back-to-top.js` e páginas internas. Abrir `index.html` via `file://` pode funcionar parcialmente, mas um teste fiel deve usar servidor HTTP/HTTPS com essa base, ou adaptar os caminhos a outra hospedagem.
 
 ### 2.2 Arquitetura conceitual recomendada para implementação equivalente
 
@@ -664,7 +665,7 @@ Eddie Brock e Venom passam a ser perseguidos por forças humanas e alienígenas,
 ### 4.1 Entrada na página
 
 1. O visitante abre a URL pública no GitHub Pages.
-2. O script de tema no `<head>` consulta a preferência local antes da pintura do CSS, atribui `html.dataset.theme` igual a `light` ou `dark` e ajusta a meta `theme-color`.
+2. O script de tema no `<head>` consulta a preferência local antes da pintura do CSS, atribui `html.dataset.theme` igual a `light`, `dark` ou `oled` e ajusta a meta `theme-color`.
 3. A home inicializa catálogo e dicionário de sinopses, lê progresso e preferências do `localStorage` com `try/catch`, aplica padrões, inicializa seções recolhidas e renderiza o estado.
 4. A capa apresenta **Maratona Marvel**, ícone de claquete, texto explicativo e controle de configurações.
 5. Abaixo, os números de filmes vistos, total, percentual, restantes e uma barra de progresso acessível apresentam a situação da lista ativa.
@@ -882,7 +883,7 @@ A interface usa modal HTML `<dialog id="settings">`, com título focável, contr
 
 **Visualização**
 - `minimal`: **false** por padrão — modo minimalista máximo.
-- `dark`: **false** — modo escuro explícito.
+- `theme`: **"light"** — seletor Aparência com Claro, Escuro e OLED. O antigo booleano `dark` é aceito para migração.
 - `stickyProgress`: **true** — progresso flutuante ao rolar, não minimalista.
 - `backToTop`: **true** — atalho circular no canto inferior direito, nas quatro páginas.
 
@@ -899,18 +900,22 @@ A interface usa modal HTML `<dialog id="settings">`, com título focável, contr
 
 O modelo de configurações armazenado pode conter também `collapsedSections: string[]`. O estado dessa propriedade nasce implicitamente quando o usuário usa os controles de expansão.
 
-### 8.2 Modo claro e escuro: regra de autoridade
+### 8.2 Aparência: Claro, Escuro e OLED (True Black)
 
-**Escolha explícita do site prevalece sobre o tema do iPhone/OS.** Um bug real ocorreu porque páginas institucionais seguiam `prefers-color-scheme:dark` enquanto a home respeitava o localStorage.
+**A preferência explícita do site prevalece sobre a aparência do iPhone/OS.** O modal apresenta um seletor `<select id="theme">` com **Claro**, **Escuro** e **OLED**, substituindo o antigo checkbox “Modo escuro”.
 
-Contrato:
-- Tema inicial: **claro**, independentemente da aparência global do aparelho, salvo se `prefs.dark === true`.
-- `html[data-theme="light"]` e `html[data-theme="dark"]` com variáveis explícitas (ex.: `--bg`, `--fg`, `--muted`, `--line`, `--surface`).
-- Inicializar **antes de renderizar o CSS** para evitar flash de cores erradas.
-- Ajustar `meta name="theme-color"` ao tema.
-- Páginas internas leem a **mesma chave** e escutam `pageshow`, `storage` e `visibilitychange` para revalidar o tema (Safari pode restaurar páginas do cache de navegação sem refazer scripts).
-- Não replicar regras individuais divergentes de `@media (prefers-color-scheme:dark)`.
-- Cores do rodapé também variam com `data-theme`.
+- **Claro** (padrão): fundo `#fafaf9`, superfícies brancas, texto escuro.
+- **Escuro**: fundo `#141615`, superfícies grafite `#202421`, texto claro.
+- **OLED**: fundo do documento **`#000000`**, superfícies quase pretas `#080808`, bordas `#303030`, texto `#eaeaea`. O rodapé full-bleed também é **preto absoluto**; identidade/capa vermelha preservada.
+- `color-scheme:dark` também se aplica ao OLED para os controles nativos. Não detectar automaticamente tecnologia da tela.
+- Fonte de verdade: `localStorage["marvel-display-v1"].theme` com `"light"|"dark"|"oled"`. O script no `<head>` lê essa chave antes do CSS e define `html.dataset.theme` e `meta[name=theme-color]` com `#fafaf9`/`#141615`/`#000000`.
+- **Migração segura:** `stored.theme` válido prevalece; na ausência, `stored.dark===true` legado vira `"dark"`, e falso/ausente vira `"light"`. A home retira `prefs.dark` do objeto canônico para não serializar o legado novamente.
+- **Importação:** novos backups usam `preferences.theme`; backups antigos com `preferences.dark` booleano continuam aceitos. **Apagar tudo** retorna `theme:"light"`.
+- A folha compartilhada `oled-theme.css` é carregada nas quatro páginas após os CSS anteriores; ajusta também capa, filtros, checkboxes, modal, drawer e rodapé.
+- As páginas institucionais continuam sincronizando o tema em `pageshow`, `storage` e `visibilitychange` (inclusive ao restaurar o Safari do histórico).
+- Não voltar a usar `@media(prefers-color-scheme:dark)` para escolher a aparência. O OLED pode economizar energia em painéis OLED, mas sem benefício mensurável garantido.
+
+**Motivação:** corrigidas as divergências anteriores entre a home e páginas internas, o usuário pediu preto absoluto como **terceira opção independente**, sem retirar o tema grafite existente.
 
 ### 8.3 Modo minimalista máximo
 
@@ -978,7 +983,7 @@ O segundo exemplo é ilustrativo. O código real pode omitir propriedades ainda 
 
 ```json
 {
-  "dark": false,
+  "theme": "light",
   "language": "pt",
   "chronological": false,
   "notes": true,
@@ -992,7 +997,7 @@ O segundo exemplo é ilustrativo. O código real pode omitir propriedades ainda 
 }
 ```
 
-O array `collapsedSections` só aparece após interação/salvamento na implementação atual. **IDs de filmes e nomes de seções são chaves de persistência**: não renomear sem migração deliberada.
+O array `collapsedSections` só aparece após interação/salvamento na implementação atual. O campo `theme` aceita `light`, `dark` ou `oled`; o antigo booleano `dark` é lido apenas para migração/importação. **IDs de filmes e nomes de seções são chaves de persistência**: não renomear sem migração deliberada.
 
 ### 10.4 Exportação
 
@@ -1019,7 +1024,7 @@ O array `collapsedSections` só aparece após interação/salvamento na implemen
 - **Solicita confirmação** antes de substituir o progresso atual.
 - Só aceita IDs presentes no catálogo; ignora registros externos.
 - Por filme normaliza: `watched` booleano, `date` string em `YYYY-MM-DD` ou vazio, `rating` inteiro entre 1 e 5 ou zero.
-- Importa campos de preferências booleanas explicitamente listados no código (tema, ordem, notas, ratings, anos, datas, sticky, backToTop), idioma permitido e `collapsedSections` quando válido.
+- Importa preferências booleanas (ordem, notas, ratings, anos, datas, sticky, backToTop), `theme` entre `light`, `dark` e `oled`, com fallback para antigo `dark` booleano; idioma permitido e `collapsedSections` quando válido.
 - Salva, aplica preferências e renderiza.
 - Mensagem de erro simples para JSON inválido; limpa valor do `input` para permitir selecionar o mesmo arquivo novamente.
 
@@ -1107,20 +1112,21 @@ Pilares:
 
 ### 12.2 Tokens e cores aproximados extraídos da implementação
 
-| Elemento | Tema claro | Tema escuro | Finalidade |
-| --- | --- | --- | --- |
-| `--bg` | `#fafaf9` | `#141615` | Fundo do documento. |
-| `--fg` | `#242624` | `#e8eae6` | Texto principal. |
-| `--muted` | `#777b75` | `#a0a59e` | Texto de apoio. |
-| `--line` | `#e5e6e1` | `#363b37` | Linhas/bordas. |
-| `--surface` | `#ffffff` | `#202421` | Superfícies elevadas. |
-| Capa / ativo | próximo de `#D11F28` | Vermelho ajustado para contraste | Marca visual. |
-| Rodapé `--credits-bg` | `#f4f0ed` | `#211d20` | Separação suave do conteúdo. |
-| Borda rodapé | `#e7deda` | `#373036` | Transição delicada. |
-| Sucesso checkbox | verde | verde adaptado | Seção/filme concluído. |
-| Checkbox parcial | amarelo | amarelo adaptado | Alguns filmes marcados. |
+| Elemento | Claro | Escuro | OLED | Finalidade |
+| --- | --- | --- | --- | --- |
+| `--bg` | `#fafaf9` | `#141615` | **`#000000`** | Fundo. |
+| `--fg` | `#242624` | `#e8eae6` | `#eaeaea` | Texto principal. |
+| `--muted` | `#777b75` | `#a0a59e` | `#aaaaaa` | Texto secundário. |
+| `--line` | `#e5e6e1` | `#363b37` | `#303030` | Bordas. |
+| `--surface` | `#ffffff` | `#202421` | **`#080808`** | Controles e superfícies. |
+| `--soft` | `#f0f0ec` | `#292d2a` | `#111111` | Superfícies suaves. |
+| Capa/ativo | `#D11F28` | Vermelho atenuado | Vermelho atenuado | Identidade. |
+| Rodapé `--credits-bg` | `#f4f0ed` | `#211d20` | **`#000000`** | Faixa full-bleed. |
+| Borda rodapé | `#e7deda` | `#373036` | `#292929` | Transição. |
+| Checkbox completo | Verde | Verde ajustado | Verde ajustado | Concluído. |
+| Checkbox parcial | Amarelo | Amarelo ajustado | Amarelo ajustado | Parcial. |
 
-Esses tokens refletem a **intenção** e os valores mais relevantes do CSS. O código atual possui refinamentos e overrides históricos; ao refatorar, criar uma camada única de tokens e conferir visualmente as diferenças em todos os breakpoints.
+O OLED mantém grandes superfícies em preto verdadeiro e controles em quase preto, separados por bordas discretas. O tema grafite continua uma opção independente. Esses tokens refletem a implementação; checar contraste, mobile e Safari ao evoluir CSS.
 
 ### 12.3 Diretrizes responsivas
 
