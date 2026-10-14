@@ -17,11 +17,11 @@ Você pode:
 - Buscar por título ou ano, alternar entre a ordem sugerida e o agrupamento por ano de lançamento.
 - Expandir ou recolher seções, consultar comentários e abrir sinopses.
 - Registrar datas de exibição e avaliar filmes de **1 a 5 estrelas**.
-- Personalizar tema claro/escuro, idioma dos títulos, informações exibidas e modo minimalista.
+- Escolher entre **Claro**, **Escuro** e **OLED (preto absoluto)**, além do idioma dos títulos, informações exibidas e modo minimalista.
 - Exportar e importar um **backup JSON** do progresso e das preferências.
 - Compartilhar a lista diretamente pelo **WhatsApp**.
 
-O site usa o armazenamento local do navegador: suas marcações e preferências permanecem no dispositivo, sem conta e sem sincronização automática. O estado expandido/recolhido das seções também é lembrado.
+O site usa o armazenamento local do navegador: suas marcações e preferências permanecem no dispositivo, sem conta e sem sincronização automática. A aparência escolhida é compartilhada pelas quatro páginas; preferências antigas de modo escuro continuam compatíveis. O estado expandido/recolhido das seções também é lembrado.
 
 ## Execução local
 
@@ -38,6 +38,7 @@ Para explorar o código, abra `index.html` em um navegador. Para testar todas as
 | `ordem-recomendada/index.html` | Metodologia da sequência editorial. |
 | `privacidade/index.html` | Política de privacidade e serviços utilizados. |
 | `shared-footer.css` | Estilos compartilhados do rodapé e do botão flutuante. |
+| `oled-theme.css` | Paleta OLED com preto absoluto, compartilhada pelas quatro páginas. |
 | `back-to-top.js` | Comportamento do botão “Voltar ao topo” nas páginas. |
 | [`docs/ESPECIFICACAO.md`](docs/ESPECIFICACAO.md) | **Documentação viva completa**, decisões, contratos funcionais, histórico e guia para reconstrução do produto. |
 
