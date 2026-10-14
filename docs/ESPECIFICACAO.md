@@ -656,3 +656,387 @@ Eddie Brock tenta estabelecer regras para sua convivência com Venom, mas sua in
 
 Eddie Brock e Venom passam a ser perseguidos por forças humanas e alienígenas, enquanto uma ameaça ligada à origem dos simbiontes se aproxima. A dupla precisa tomar decisões difíceis para impedir consequências maiores.
 
+
+---
+
+## 4. Jornada do usuário e estrutura visual da home
+
+### 4.1 Entrada na página
+
+1. O visitante abre a URL pública no GitHub Pages.
+2. O script de tema no `<head>` consulta a preferência local antes da pintura do CSS, atribui `html.dataset.theme` igual a `light` ou `dark` e ajusta a meta `theme-color`.
+3. A home inicializa catálogo e dicionário de sinopses, lê progresso e preferências do `localStorage` com `try/catch`, aplica padrões, inicializa seções recolhidas e renderiza o estado.
+4. A capa apresenta **Maratona Marvel**, ícone de claquete, texto explicativo e controle de configurações.
+5. Abaixo, os números de filmes vistos, total, percentual, restantes e uma barra de progresso acessível apresentam a situação da lista ativa.
+6. A pessoa escolhe um dos três filtros, opcionalmente pesquisa ou organiza por ano, marca filmes, expande seções e ajusta preferências.
+7. Após o conteúdo, o rodapé reúne identidade, compartilhamento, ferramentas de backup (na home), links e dedicatória.
+
+### 4.2 Cabeçalho e capa
+
+- Identidade em tom **vermelho Marvel** em contraste com corpo branco/cinza-acinzentado no tema claro.
+- Palavra **Maratona Marvel** com hierarquia tipográfica e ícone de claquete integrado ao título, mantendo dimensões/alinhamento corretos especialmente no Safari.
+- Texto breve apresenta a proposta; evitar manchetes grandiosas que deem a entender um serviço de streaming.
+- Botão de configurações tem ícone próprio, rótulo acessível e abre modal nativo `<dialog>`.
+- No celular, a **capa vai de borda a borda**, enquanto a lista preserva margens laterais para leitura.
+- No desktop, conteúdo centralizado com largura editorial (em geral limite próximo de **940px** para home).
+- Tema claro/escuro não significa trocar o fundo da capa por um azul corporativo: a identidade vermelha é elemento central.
+
+### 4.3 Cartão de progresso abaixo da capa
+
+- À esquerda: ícone de **película/filme**, numerador de vistos, separador "/" e denominador total.
+- Os três caracteres numéricos e a barra devem ser **alinhados verticalmente pelo mesmo eixo**; solução adotada: `inline-flex` em `.progress-numbers`, `align-items:center`, números tabulares e separador independente.
+- Texto subordinado: "**filmes vistos · X% concluído**".
+- À direita: número de filmes restantes, atualizado com os filtros e a busca.
+- Barra `role="progressbar"` com mínimo 0, máximo 100 e `aria-valuenow` atualizado.
+- A contagem **não é sempre 70**: filtro MCU e busca alteram numerador, denominador e percentual da **visão atual**.
+- **Separar duas semânticas:** percentual visível depende da seleção filtrada; **conclusão total de maratona** depende dos **70 registros** marcados, mesmo se o usuário estiver pesquisando apenas um título.
+
+### 4.4 Barra fixa de progresso (`stickyProgress`)
+
+- Quando habilitada, ao ultrapassar o componente de progresso original, aparece uma barra superior compacta com "Progresso", vistos/total, trilho e percentual.
+- Posição fixa, pequena distância do topo, superfície do tema, sombra discreta e bom contraste.
+- Transição suave entrada/saída; respeitar `prefers-reduced-motion`.
+- **Não é mostrada no modo minimalista**; tampouco deve encobrir a janela de configurações.
+- O estado depende da posição da barra original (`getBoundingClientRect().bottom < 0`), rolagem, redimensionamento, `prefs.stickyProgress` e estado do modal.
+- Deve permanecer inacessível a cliques quando escondida (na implementação existente, via `pointer-events:none`).
+- No celular, evitar sobrepor notch, gestos e controles.
+
+### 4.5 Filtros, busca e texto de ajuda
+
+- Os três filtros formam controle visual compacto em que apenas um está ativo; `aria-pressed` acompanha o estado.
+- O filtro selecionado usa **vermelho coerente com a capa nos dois temas**, não azul default.
+- Campo de busca acompanha os filtros no desktop e se adapta em larguras reduzidas.
+- Busca consulta `pt`, `en` e `year` no conjunto de filmes, com `toLocaleLowerCase('pt-BR')` e comparação textual. A busca não depende do idioma que está sendo exibido.
+- A entrada traz placeholder/`aria-label` “Buscar filme” e um botão de limpar acessível, oculto quando não há texto.
+- O texto contextual sob os filtros muda: todos → MCU + recomendados + opcionais; MCU → oficiais; recomendados → complementos sem extras.
+- Um segundo texto orienta a marcar filmes e tocar no título para pesquisar.
+- O título do filme **é um link para busca externa** no Google, aberto em nova aba com `rel="noopener noreferrer"`; não deve parecer botão de player.
+
+### 4.6 Sem resultados
+
+Se filtros + busca retornarem zero itens, apresentar indicação simples e legível de que não há filmes encontrados, sem exibir uma seção vazia. O progresso deve permanecer matematicamente válido: se denominador zero, percentual exibido igual a zero; nunca `NaN` ou divisão por zero.
+
+---
+
+## 5. Seções, expansão, seleção e persistência
+
+### 5.1 Anatomia de uma seção
+
+Uma `section.saga` possui:
+
+1. **Checkbox circular** de marcação em massa, à esquerda.
+2. **Título** com nome editorial e **subtítulo** (em português, normalmente fase/saga ou descrição temática).
+3. **Contador clicável** de vistos/total da seção, por exemplo **0 / 6**, com largura constante e números tabulares.
+4. **Seta triangular** de expandir/recolher, alinhada à direita.
+5. Lista animada de filmes.
+
+Na organização por ano, os mesmos mecanismos valem para seções de agrupamento **"2021", "2022"**, etc., e não apenas para os nomes dos blocos da curadoria.
+
+### 5.2 Regras de clique e teclado
+
+- Clicar ou tocar no **título**, **subtítulo**, **contador**, **seta** ou **espaço vazio do cabeçalho** alterna a expansão.
+- O **checkbox circular não expande/recolhe**. Ele altera a marcação de todos os filmes visíveis da seção.
+- O contador é um **`<button type="button">`** com `data-toggle-section`, `aria-expanded` e `aria-label` dinâmicos. Não deve ser um mero `<span>`.
+- Título e seta são botões com a mesma ação, `aria-expanded` coerente e rótulo “Exibir/Ocultar filmes da seção …”.
+- O clique no espaço vazio do `.sagahead` deve delegar ao trigger da seção, exceto quando começou no checkbox.
+- A área de toque deve funcionar no iPhone, sem exigir acerto num hotspot estreito nem responder duas vezes por evento.
+- Teclado: Enter/Espaço ativam botões e checkbox respeitando os comportamentos nativos.
+- Estado visual: expansão/recolhimento com animação de altura/opacidade e triângulo rotacionando. Reduzir ou desativar com preferência de movimento reduzido.
+
+### 5.3 Marcação do checkbox da seção
+
+- **Vazio**: nenhum filme da seção marcado.
+- **Indeterminado/amarelo**: parte dos filmes da seção marcada; atributo DOM `indeterminate=true`.
+- **Concluído/verde**: todos marcados; checkbox checked.
+- Esses indicadores se aplicam também aos checkbox de seleção individual com estilo circular consistente, mas a seleção parcial é característica da seção.
+- A marcação em massa atualiza cada filme do conjunto **visível na seção** (respeitando filtro/ordem/busca), e seu registro de data. Não altera invisíveis por engano.
+- Checkboxes usam SVG simples em CSS para marca verde / hífen amarelo e neutralidade cinza no vazio, sem bordas extras persistentes.
+- Evitar `:hover` que fique preso em dispositivos touch; preservar `:focus-visible` para navegação por teclado.
+
+### 5.4 Persistência das seções
+
+O estado estável é um `Set<string> collapsedSections`. Nomes correspondentes estão salvos em `preferences.collapsedSections` no `localStorage`.
+
+- Sem preferência válida: inicia com todas as seções **expandidas**.
+- Clique individual: acrescenta ou remove nome do `Set`, atualiza a classe `.collapsed`, estado ARIA e grava `prefs.collapsedSections` via `savePrefs()`.
+- **Recolher/Expandir todas**: itera os grupos **atualmente renderizados**, altera estados de expansão e salva o conjunto.
+- Recarregar a página reidrata o `Set` e restaura a aparência de cada seção.
+- Troca de filtro não deve apagar o estado de seções não presentes; nomes de seções ocultas permanecem salvos.
+- Ordem por ano: a chave é o nome de grupo atual (por exemplo, “2022”). Não tentar indexar por posição.
+- O estado é incluído no backup e restaurado se `preferences.collapsedSections` for array válido de strings.
+- **Reset global** limpa o conjunto e retorna ao estado expandido, além de remover dados de progresso e restaurar padrões.
+- As seções devem preservar seus próprios estados mesmo que a aplicação refaça o `innerHTML` ao marcar filmes.
+
+### 5.5 Botão Expandir/Recolher todas
+
+- Posicionado junto ao início da lista, visualmente secundário.
+- A ação é **contextual**: se todos os grupos renderizados estiverem recolhidos, exibe “Expandir seções”; caso contrário, “Recolher seções”.
+- O rótulo acessível e o título devem coincidir com a ação real.
+- Respeita as seções renderizadas no filtro atual, sem descartar o estado de outros grupos.
+- Funciona no modo minimalista, que apresenta apenas o conteúdo essencial.
+
+---
+
+## 6. Linha do filme e comportamento de progresso
+
+### 6.1 Estrutura de cada linha
+
+A lista combina:
+
+- `input.check` circular para visto/não visto.
+- Título localizável `pt` ou `en`; é link de **pesquisa Google**, não de streaming.
+- Ano em exibição opcional; filmes futuros indicam “previsto”.
+- Selo **Opcional** se `tier === "optional"`.
+- Comentário editorial `note` se ativo e disponível.
+- Painel de sinopse com botão “Sinopse” se houver texto e estiver habilitado.
+- Avaliação por estrelas se ativa.
+- Campo HTML `input[type=date]` se a opção estiver ativa.
+- Layout adaptativo de linhas e colunas, sem quebra de nome truncando informação relevante.
+
+### 6.2 Marcar/desmarcar como assistido
+
+Ao marcar um filme:
+
+1. Identificar o `id` estável do filme.
+2. Salvar `watched: true` no mapa `progress[id]`.
+3. Se já existia data salva, preservá-la; caso contrário, atribuir **data local de hoje** no formato `YYYY-MM-DD` (sem UTC que antecipe/atrase o dia).
+4. Manter outros campos já registrados, inclusive rating.
+5. Salvar progresso local e recalcular contadores, filtros e indicadores de seção.
+6. Avaliar se completou uma seção ou os **70 filmes**, acionando celebração somente na transição apropriada.
+
+Ao desmarcar:
+
+- Persistir `watched: false`.
+- **Limpar a data do filme**, definindo `date: ""`; esta foi uma escolha explícita de UX para não preservar data de um item que voltou a “não visto”.
+- **Não apagar avaliação** automaticamente; são informações conceitualmente distintas.
+- Atualizar estatísticas e indicadores.
+- Se o usuário desmarcar durante a celebração de conclusão, interromper o final em andamento (`stopConfetti`).
+- Não abrir confirmação individual desnecessária.
+
+### 6.3 Registrar uma data
+
+- Mostrar controle nativo `type="date"` somente quando `prefs.dates === true` e fora do modo minimalista.
+- Para filme não visto, o campo fica desabilitado até a marcação.
+- Alterar data coloca `watched: true` e salva a nova data.
+- Ocultar a configuração de data **não apaga datas existentes**.
+- A funcionalidade de “limpar data” por botão extra foi testada e depois removida para reduzir ruído. A data é limpa ao desmarcar o filme.
+- O formato salvo deve permitir importação/exportação e validação simples `^\d{4}-\d{2}-\d{2}$`.
+
+### 6.4 Avaliar com estrelas (opt-in)
+
+- A opção de rating fica desativada por padrão. Ao ativar, mostrar cinco estrelas por filme com valores de **1 a 5**.
+- Toque/click em estrela seleciona o valor; `aria-pressed` reflete a estrela escolhida.
+- Arrastar horizontalmente atualiza **prévia visual**; confirmar valor ao soltar.
+- A captura de ponteiro (`setPointerCapture`) impede perda acidental do gesto quando o dedo sai das estrelas.
+- Threshold de deslocamento de aproximadamente **8px** distingue toque de arraste.
+- **Limpar avaliação:** arrastar para a **esquerda** do primeiro ponto ativo (zona de limpeza) define rating **0**; não existe botão “X” visível.
+- A zona de limpeza **não** deve disparar só por tocar perto da primeira estrela, evitando zerar acidentalmente.
+- Teclado: `Delete`, `Backspace` ou `Home` limpam rating; manter foco plausível após salvar.
+- Interromper prévias ao cancelar ponteiro ou perder captura.
+- Não comprometer scroll vertical do touch (`touch-action:pan-y` nas estrelas).
+- Estrelas selecionadas e de preview possuem estados de cor distintos e precisam de contraste em tema escuro.
+
+### 6.5 Comentários e sinopses
+
+- `prefs.notes` **habilitado por padrão**, mostrando notas editoriais e botão para sinopses individuais.
+- Clicar “Sinopse” revela texto daquele filme sem marcar visto, mudar filtro nem ir a outra página.
+- Múltiplas sinopses podem estar abertas em paralelo; não é accordion exclusivo.
+- O estado das sinopses existe em `expandedSynopses` **em memória**; não há requisito de persistir entre recarregamentos.
+- Botão com `aria-expanded` e `aria-controls` correspondendo ao painel específico.
+- Painel abre com transição suave e sem saltos agressivos de altura; respeitar movimento reduzido.
+- Ao desabilitar notas ou entrar no modo minimalista, ocultar notas e sinopses sem alterar progresso.
+- Editar sinopses e notas exige rever fidelidade factual e risco de spoilers.
+
+---
+
+## 7. Ordenação, escopo e semântica de contagem
+
+### 7.1 Ordenação recomendada
+
+Ordem original de `sections` e ordem interna de `items`, independentemente da data em que o usuário marcou o filme. Os blocos complementares devem permanecer inteiros e nos pontos escolhidos pela curadoria.
+
+### 7.2 Ordenação por ano
+
+- Toggle `chronological` agrupa filmes do filtro atual por **ano**; um filme pode aparecer visualmente distante do bloco editorial.
+- Ordenação ascendente por `year`, desempate estável por `sequence` editorial.
+- Cabeçalho do grupo: ano; subtítulo “Lançamentos de ANO”.
+- IDs, ratings e datas não são alterados.
+- Como agrupamentos mudam, a conclusão de “seção” se refere ao grupo renderizado no modo corrente, não obrigatoriamente a uma fase original.
+
+### 7.3 Busca e filtros
+
+- Filtro `all`: todos os `group`.
+- Filtro `mcu`: apenas `group=mcu`.
+- Filtro `recommended`: todo `group≠optional` (inclui MCU).
+- Busca: contém consulta normalizada em título PT, EN ou representação de ano; aplica-se após restrição de grupo.
+- Mesmo que o filtro exiba 1 de 1 assistido e 100%, **não anunciar maratona inteira concluída** sem `all.every(watched)` nos 70.
+- O botão “Recolher todas” atua sobre seções resultantes, não sobre as 12 seções editoriais ausentes.
+
+---
+
+## 8. Configurações e preferências
+
+A interface usa modal HTML `<dialog id="settings">`, com título focável, controles agrupados, descrição de cada opção, fechamento por botão e comportamento nativo de Escape. Abertura via ícone de engrenagem na capa.
+
+### 8.1 Grupos de configurações
+
+**Visualização**
+- `minimal`: **false** por padrão — modo minimalista máximo.
+- `dark`: **false** — modo escuro explícito.
+- `stickyProgress`: **true** — progresso flutuante ao rolar, não minimalista.
+- `backToTop`: **true** — atalho circular no canto inferior direito, nas quatro páginas.
+
+**Organização e conteúdo**
+- `language`: **"pt"**; alternativa `"en"` apenas para títulos.
+- `chronological`: **false** — ordem editorial por padrão.
+- `notes`: **true** — comentários e sinopses disponíveis.
+- `years`: **true** — ano de estreia visível.
+- `dates`: **false** — datas pessoais ocultas.
+- `ratings`: **false** — estrelas pessoais ocultas.
+
+**Dados**
+- Exportação JSON; importação JSON; botão de apagar tudo com confirmação explícita.
+
+O modelo de configurações armazenado pode conter também `collapsedSections: string[]`. O estado dessa propriedade nasce implicitamente quando o usuário usa os controles de expansão.
+
+### 8.2 Modo claro e escuro: regra de autoridade
+
+**Escolha explícita do site prevalece sobre o tema do iPhone/OS.** Um bug real ocorreu porque páginas institucionais seguiam `prefers-color-scheme:dark` enquanto a home respeitava o localStorage.
+
+Contrato:
+- Tema inicial: **claro**, independentemente da aparência global do aparelho, salvo se `prefs.dark === true`.
+- `html[data-theme="light"]` e `html[data-theme="dark"]` com variáveis explícitas (ex.: `--bg`, `--fg`, `--muted`, `--line`, `--surface`).
+- Inicializar **antes de renderizar o CSS** para evitar flash de cores erradas.
+- Ajustar `meta name="theme-color"` ao tema.
+- Páginas internas leem a **mesma chave** e escutam `pageshow`, `storage` e `visibilitychange` para revalidar o tema (Safari pode restaurar páginas do cache de navegação sem refazer scripts).
+- Não replicar regras individuais divergentes de `@media (prefers-color-scheme:dark)`.
+- Cores do rodapé também variam com `data-theme`.
+
+### 8.3 Modo minimalista máximo
+
+Motivação: permitir acompanhar somente **filmes e anos** sem chrome visual excessivo.
+
+- A home entra no estado `html.minimal`.
+- Capa, progresso e controles (filtros, busca, ações selecionadas) migram para **menu lateral** em vez de permanecerem no fluxo da lista.
+- O código original usa `miniTargets` com comentários-placeholder para mover elementos DOM ao `mini-drawer-content` sem destruí-los; ao desativar, devolve-os à posição.
+- Ícone hambúrguer aparece somente no modo minimalista, independente da largura do viewport; bug antigo de aparecer no modo normal foi corrigido.
+- Drawer abre sobre backdrop, tem botão fechar, e fecha com toque fora ou `Escape`; foco se move para fechar quando abre e retorna ao acionador quando fecha.
+- Informações secundárias (notas, sinopses, ratings, datas etc.) ficam ocultas; anos ficam visíveis de forma compacta.
+- Barra sticky de progresso é ocultada nesse modo; o botão geral “Voltar ao topo” segue sua configuração própria.
+- Preferências não são perdidas ao entrar/sair; reativar modo normal restaura a apresentação.
+- O menu lateral deve caber em telas estreitas, manter inputs acessíveis, não prender o scroll do documento após fechar nem sobrepor conteúdo.
+
+---
+
+## 9. Retornar ao topo e comportamento de scroll
+
+**Componente compartilhado:** botão `#back-to-top` e script `back-to-top.js`.
+
+- Fica fixo no **canto inferior direito** com ícone de seta para cima, superfície contrastante e borda/sombra discretas.
+- Posicionado acima da safe area via `env(safe-area-inset-bottom, 0px)`.
+- Torna-se visível quando o documento ultrapassa cerca de **450px** de rolagem, se habilitado.
+- Some no começo da página, quando desativado, durante modal de configurações e enquanto menu lateral está aberto (regra CSS `html.drawer-open`).
+- Clique aciona `window.scrollTo({top:0, behavior:"smooth"})`.
+- Com `prefers-reduced-motion:reduce`, usar `behavior:"auto"`.
+- O script escuta `scroll` (passivo, otimizado via `requestAnimationFrame`), `resize`, `pageshow`, mudanças de `localStorage` e visibilidade da página.
+- A preferência é armazenada em `marvel-display-v1.backToTop` e sua mudança na home é anunciada por `CustomEvent("marvel-display-updated")`, para efeito imediato.
+- Nas páginas institucionais, não há necessidade de duplicar o modal de preferências; o botão lê o estado que foi definido na home.
+
+---
+
+## 10. Persistência, backups e modelo de estado
+
+### 10.1 Chaves de armazenamento
+
+| Chave | Conteúdo | Duração |
+| --- | --- | --- |
+| `marvel-watchlist-v1` | Objeto indexado por ID do filme com visto/data/rating. | Até usuário limpar storage/resetar dados. |
+| `marvel-display-v1` | Objeto com preferências de exibição e array de seções recolhidas. | Idem; também lido pelas páginas internas. |
+
+Ambas as leituras usam `try/catch` para dados ausentes, JSON inválido, storage bloqueado ou versões anteriores; ausência implica padrões seguros.
+
+### 10.2 Esquema do progresso
+
+```json
+{
+  "iron-man-2008": {
+    "watched": true,
+    "date": "2026-10-14",
+    "rating": 5
+  },
+  "thor-2011": {
+    "watched": false,
+    "date": "",
+    "rating": 0
+  }
+}
+```
+
+O segundo exemplo é ilustrativo. O código real pode omitir propriedades ainda não utilizadas e combinar campos antigos via spread. **Não apagar dados desconhecidos sem razão**; ao importar, entretanto, a validação explicitamente seleciona campos previstos.
+
+### 10.3 Esquema das preferências
+
+```json
+{
+  "dark": false,
+  "language": "pt",
+  "chronological": false,
+  "notes": true,
+  "ratings": false,
+  "years": true,
+  "dates": false,
+  "stickyProgress": true,
+  "backToTop": true,
+  "minimal": false,
+  "collapsedSections": ["Fase 1 · A formação da equipe"]
+}
+```
+
+O array `collapsedSections` só aparece após interação/salvamento na implementação atual. **IDs de filmes e nomes de seções são chaves de persistência**: não renomear sem migração deliberada.
+
+### 10.4 Exportação
+
+- Botão **Exportar** fica no rodapé da **home**, no bloco “Sua maratona, suas lembranças”.
+- Gera `maratona-marvel-progresso.json` localmente via `Blob`/`URL.createObjectURL`/download de `<a>` temporário.
+- Não envia arquivo a um servidor.
+- Payload atual:
+
+```json
+{
+  "version": 2,
+  "exportedAt": "2026-10-14T12:00:00.000Z",
+  "progress": {},
+  "preferences": {}
+}
+```
+
+`version: 2` é o valor utilizado no exportador atual; `exportedAt` é a data/hora ISO no momento real da operação; os dois objetos devem conter dados atuais.
+
+### 10.5 Importação
+
+- O botão **Importar** é um `<label>` com input oculto `type=file` e `accept="application/json,.json"`.
+- Lê JSON localmente, rejeita payload sem objeto `progress` ou com progress como array.
+- **Solicita confirmação** antes de substituir o progresso atual.
+- Só aceita IDs presentes no catálogo; ignora registros externos.
+- Por filme normaliza: `watched` booleano, `date` string em `YYYY-MM-DD` ou vazio, `rating` inteiro entre 1 e 5 ou zero.
+- Importa campos de preferências booleanas explicitamente listados no código (tema, ordem, notas, ratings, anos, datas, sticky, backToTop), idioma permitido e `collapsedSections` quando válido.
+- Salva, aplica preferências e renderiza.
+- Mensagem de erro simples para JSON inválido; limpa valor do `input` para permitir selecionar o mesmo arquivo novamente.
+
+**Detalhe de fidelidade do snapshot:** o exportador inclui **todas as propriedades `prefs`**, mas a lista de campos copiados pelo importador **não inclui `minimal` atualmente**. Isso é um detalhe da implementação atual, não uma intenção necessariamente desejável. Uma reimplementação mais consistente pode importar também `minimal` depois de atualizar requisitos e testes de compatibilidade.
+
+### 10.6 Reset total
+
+- Botão de limpeza exige confirmação com descrição inequívoca de irreversibilidade sem backup.
+- Ao confirmar, progresso vira objeto vazio; escolhas retornam a `defaults`; seções recolhidas são limpas; busca/filtro volta ao padrão; preferências e progresso são persistidos e UI atualizada.
+- Nunca apagar dados sem confirmação.
+- O site não consegue recuperar dados excluídos pelo navegador quando não existe arquivo de backup.
+
+### 10.7 Privacidade por arquitetura
+
+- Progressos, datas pessoais e ratings residem localmente; não anexar essa informação a URL de compartilhamento, analytics ou pesquisa externa.
+- Não guardar dados privados em query parameters acessíveis por terceiros.
+- Distinguir **telemetria pública de acesso** de **dados locais da watchlist**.
+- Não alegar sincronização entre equipamentos.
+- Se adicionar conta/sync/ads no futuro, isso muda produto, privacidade, consentimento, documentação e testes; não é modificação cosmética.
+
