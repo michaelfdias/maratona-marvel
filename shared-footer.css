@@ -58,7 +58,7 @@ main.wrap,body>.wrap{padding-bottom:0}
   transition:color .18s ease,text-decoration-color .18s ease
 }
 .footer-share-trigger svg{display:block;flex:none;width:17px;height:17px}
-.footer-share-trigger .footer-share-arrow{width:15px;height:15px;opacity:.58;margin-left:2px}
+.footer-share-trigger .footer-share-arrow{width:15px;height:15px;opacity:.58;margin-left:-5px}
 .footer-share-trigger:focus{outline:none;box-shadow:none}
 .footer-share-trigger:focus-visible{outline:2px solid #8cae9b;outline-offset:3px}
 @media(hover:none) or (pointer:coarse){
@@ -112,14 +112,22 @@ main.wrap,body>.wrap{padding-bottom:0}
 }
 .footer-pages a{
   color:var(--muted);font-weight:600;text-decoration:none;
-  text-underline-offset:4px;transition:color .18s ease
+  text-underline-offset:4px;transition:color .18s ease;
+  -webkit-tap-highlight-color:transparent;touch-action:manipulation
 }
 .footer-pages a[aria-current="page"]{color:var(--fg);font-weight:750}
 .footer-pages a:focus-visible{
   color:var(--fg);text-decoration:underline;outline:2px solid #8cae9b;outline-offset:3px
 }
+/* Hover real só com mouse; no Safari touch evita :hover retido após o toque. */
 @media(hover:hover) and (pointer:fine){
   .footer-pages a:hover{color:var(--brand,#a32034);text-decoration:underline}
+}
+@media(hover:none), (pointer:coarse){
+  .footer-pages a:not([aria-current="page"]):hover,
+  .footer-pages a:not([aria-current="page"]):focus:not(:focus-visible){
+    color:var(--muted);text-decoration:none
+  }
 }
 .footer .dedication{
   display:block;width:auto;max-width:890px;
