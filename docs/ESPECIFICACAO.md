@@ -1040,3 +1040,340 @@ O array `collapsedSections` só aparece após interação/salvamento na implemen
 - Não alegar sincronização entre equipamentos.
 - Se adicionar conta/sync/ads no futuro, isso muda produto, privacidade, consentimento, documentação e testes; não é modificação cosmética.
 
+
+---
+
+## 11. Celebrações, feedback e movimento
+
+### 11.1 Filosofia
+
+A maratona tem valor afetivo e duração longa. O feedback de completar um bloco precisa recompensar sem distrair; a conclusão de **todos os filmes** merece uma comemoração **"wow"**, com diferenciação explícita. Não tocar música automaticamente, não bloquear interação, não navegar para fora da página e não iniciar comemorações quando o usuário simplesmente recarrega o site já concluído.
+
+### 11.2 Conclusão de seção
+
+Na transição de **seção incompleta → completa**:
+
+- Comparar conjuntos de blocos completos antes/depois da alteração de checkbox.
+- Aplicar classe transitória `section-celebrate` ao cabeçalho do grupo concluído, com realce breve.
+- Emitir confetes em `<canvas>` temporário com **duas explosões** e duração aproximada de **2,95s**.
+- Não exibir banner modal intrusivo; a animação deve ser contextual.
+- Respeitar `prefers-reduced-motion` e interromper/limpar canvas corretamente.
+- Se marcou um lote que completou vários grupos, a versão atual escolhe o primeiro novo grupo como alvo do destaque.
+
+### 11.3 Conclusão de toda a maratona
+
+**Condição inequívoca:** a expressão `all.length > 0 && all.every(f => progress[f.id]?.watched)` torna-se verdadeira pela primeira vez após uma mudança (`!wasComplete && marathonComplete()`). Não é suficiente haver 100% em filtro restrito.
+
+Comportamento da comemoração final:
+
+- Duração principal aproximada de **10.500ms**.
+- **12 grandes ondas** de explosões escalonadas por regiões da tela, mais pequenas chuvas entre elas.
+- **Oito tipos de partículas**, desenhadas no canvas: confete retangular, estrela, círculo, losango, serpentina, película cinematográfica, claquete e faísca.
+- **Anéis dourados**, pequenos raios e aura/progresso com brilho complementam a animação.
+- Paleta inclui vermelho, dourado, branco e algumas cores secundárias para contraste.
+- Em dispositivos móveis (< ~650px de largura), emitir menos partículas; limites aproximados do script: **560** partículas simultâneas no mobile e **1.000** no desktop.
+- Respeitar device pixel ratio com limite (ex.: `Math.min(devicePixelRatio, 1.75)`) para não sobrecarregar GPU/canvas.
+- Renderização com `requestAnimationFrame` e delta time limitado.
+- Fade out progressivo nos ~1,5s finais.
+- Overlay com ícone de troféu e mensagem **“Missão cumprida!”** / **“Maratona concluída: 70 de 70 filmes! 🍿”** durante aproximadamente **5,1s**.
+- `role="status"`, `aria-live="polite"`, sem bloquear cliques ou foco; `pointer-events:none`.
+- Quando `prefers-reduced-motion: reduce`, **não animar partículas**, mas pode exibir a mensagem de conclusão sem movimento.
+- Vibração leve em dispositivos que disponibilizem `navigator.vibrate`, encapsulada em verificação de recurso e tratamento de falha.
+- Ao iniciar, parar animação anterior; ao terminar, cancelar RAF, remover canvas, desregistrar `resize`, cancelar timer do banner, retirar `victory-active`.
+- Se o último filme for desmarcado durante a celebração, parar imediatamente.
+
+**Cuidado com filmes futuros:** o total editorial é 70, incluindo `future`; o mecanismo atual **permite marcação** de títulos futuros. Não alterar silenciosamente a regra para excluir previstos do denominador: isso mudaria o produto.
+
+### 11.4 Decisão histórica
+
+A celebração inicial usava confetes comuns e era considerada pouco memorável. O requisito evoluiu para peças temáticas e duração longa. A solução foi feita **sem dependência de CDN de confetti**, com canvas próprio, redução de carga no celular e compatibilidade com redução de movimento. A escolha de um final exuberante não se aplica a cada checkbox nem a cada seção.
+
+---
+
+## 12. Identidade visual e sistema de design
+
+### 12.1 Direção artística
+
+**Editorial cinematográfico minimalista:** o site deve parecer um guia cuidado, não um catálogo de banners e posters, dashboard corporativo ou portal de streaming. Uma grande lista precisa ser leve para escanear, com densidade racional, títulos legíveis e poucos acentos cromáticos.
+
+Pilares:
+- Vermelho Marvel na capa, filtros ativos e acentos; evitar saturação em todos os elementos.
+- Fundo claro levemente aquecido e superfície branca para controles, em vez de cinza puro brilhante em excesso.
+- Tema escuro por escolha explícita com superfícies grafite/cinza-esverdeadas e contraste suficiente.
+- Tipografia `Inter`/`system-ui`, títulos com peso e tracking controlados, textos de apoio menores e calmos.
+- Ícones SVG inline leves (claquete, película, controles, compartilhamento, seta) para evitar fonte de ícones remota e desalinhamentos.
+- Contornos discretos e arredondamentos coerentes; nenhum skeuomorfismo decorativo excessivo.
+- Animações só quando comunicam estado ou celebram conquistas; sem parallax, flashes, scroll-jacking.
+
+### 12.2 Tokens e cores aproximados extraídos da implementação
+
+| Elemento | Tema claro | Tema escuro | Finalidade |
+| --- | --- | --- | --- |
+| `--bg` | `#fafaf9` | `#141615` | Fundo do documento. |
+| `--fg` | `#242624` | `#e8eae6` | Texto principal. |
+| `--muted` | `#777b75` | `#a0a59e` | Texto de apoio. |
+| `--line` | `#e5e6e1` | `#363b37` | Linhas/bordas. |
+| `--surface` | `#ffffff` | `#202421` | Superfícies elevadas. |
+| Capa / ativo | próximo de `#D11F28` | Vermelho ajustado para contraste | Marca visual. |
+| Rodapé `--credits-bg` | `#f4f0ed` | `#211d20` | Separação suave do conteúdo. |
+| Borda rodapé | `#e7deda` | `#373036` | Transição delicada. |
+| Sucesso checkbox | verde | verde adaptado | Seção/filme concluído. |
+| Checkbox parcial | amarelo | amarelo adaptado | Alguns filmes marcados. |
+
+Esses tokens refletem a **intenção** e os valores mais relevantes do CSS. O código atual possui refinamentos e overrides históricos; ao refatorar, criar uma camada única de tokens e conferir visualmente as diferenças em todos os breakpoints.
+
+### 12.3 Diretrizes responsivas
+
+- Home editorial com largura máxima próxima de **940px**; margens responsivas, sem overflow horizontal.
+- Capas mobile full-bleed; rodapé também **full-bleed** em todas as quatro páginas.
+- Breakpoints históricos incluem ~700px, 640px, 380px, 360px, 315px e até 300px para ajustes específicos.
+- Não ampliar campos de ratings, datas ou filtros além da largura útil em dispositivos estreitos.
+- Texto de sinopse deve ter espaçamento e fonte adequados a iPhone; não espremer parágrafos.
+- O layout dos itens pode converter metadados em sublinhas; preservar associação visual ao título correto.
+- Botões com alvo generoso, idealmente próximo de **44px** quando possível, sem inflar a altura de cada filme desnecessariamente.
+- Respeitar área segura inferior `env(safe-area-inset-bottom)` para botão flutuante.
+- Sobreposição/modal/menu deve ter camadas `z-index` coerentes e não deixar controles clicáveis por baixo.
+
+### 12.4 Safari/iPhone: problemas reais que motivaram decisões
+
+Houve várias correções motivadas pela experiência real de tocar e navegar no Safari:
+
+1. **Fonte do título**: “Maratona” e “Marvel” aparentavam tamanhos diferentes; estrutura flex e métricas tipográficas estabilizadas.
+2. **Ícone de claquete** não centralizava corretamente; integrar à composição com `inline-flex`/alinhamento e dimensões fixas, não margens mágicas.
+3. **Ícone de película e “0 / 70”** com desalinhamento aparente; usar flex e barra "/" como elemento independente, com números tabulares e eixo vertical único.
+4. **Checkbox com foco persistente** após toque e borda circular extra; tirar `:hover` de touchscreen, usar `-webkit-tap-highlight-color:transparent`, limitar halos ao `:focus-visible` de teclado.
+5. **Item do rodapé “Ordem recomendada” aparentemente selecionado** mesmo sem clique; regras antigas da home conflitavam com arquivo compartilhado. Remover CSS legado e colocar `hover` só em dispositivos `(hover:hover) and (pointer:fine)`, além de neutralizar estado retido em touch.
+6. **Tema interno divergente** do tema da home; fonte de verdade única no `localStorage`, CSS `data-theme` explícito e ressincronização no `pageshow`.
+7. **Botão de fechar modal** aparecendo destacado inicialmente; evitar foco visual indesejado após clique, preservando foco de teclado acessível.
+8. **Estrelas difíceis de arrastar** em touch; captura de ponteiro, prévia, limpeza intencional e `pan-y`.
+9. **Links do rodapé** com arrow/icon espaçado demais; ajustar microespaçamento sem gerar caixas ou menus.
+
+**Não inventar comportamentos testados:** essas são razões/documentações do histórico; a validação final em um Safari real depende de smoke test visual e de interação.
+
+---
+
+## 13. Rodapé — “Depois dos créditos”
+
+### 13.1 Conceito de produto
+
+O rodapé começou como uma soma de peças independentes (backup, contato, links, aviso, compartilhamento, dedicatória). Foi considerado um **“Frankenstein”** sem alinhamento ou identidade. A solução aprovada foi tratá-lo como **créditos finais**: um encerramento inspirador e editorial para a jornada cinematográfica.
+
+Frase obrigatória de abertura:
+
+> **Toda grande história fica melhor quando é compartilhada.**
+
+Texto de apoio:
+
+> Gostou da lista? Convide alguém para começar essa jornada com você.
+
+Texto da área de backup, exclusiva da home:
+
+> **Sua maratona, suas lembranças.**  
+> Seu progresso e suas avaliações ficam neste navegador. Guarde uma cópia quando quiser.
+
+### 13.2 Composição aprovada (estado atual)
+
+- Uma grande **faixa horizontal 100% da viewport**, no fluxo do documento e fora do contêiner de largura restrita.
+- **Fundo suave uniforme** em tema claro e escuro. **Não** é um cartão centralizado com bordas arredondadas e margens laterais.
+- Um `.footer-inner` centralizado, max-width próximo de 940px, serve como grid editorial da faixa.
+- Abertura à esquerda: marca/ícone pequeno, frase inspiradora, texto de convite e link WhatsApp.
+- Home no desktop: área complementar à direita com progresso/backup; mobile empilha as áreas com divisor discreto.
+- Páginas internas: mesmo visual e estrutura, mas **sem** Exportar/Importar, pois elas não controlam diretamente o progresso.
+- Navegação institucional discreta centralizada com links **Maratona**, **Sobre o projeto**, **Ordem recomendada**, **Privacidade**; atributo `aria-current="page"` no destino atual.
+- Dedicatória após a navegação, alinhada ao centro; **sem caixa**, sem coração decorativo adicional, sem linha/painel legal debaixo.
+- Cuidado editorial: o fundo deve distinguir o rodapé do conteúdo sem sequestrar a atenção do texto principal.
+
+### 13.3 Dedicatória: cópia e identidade
+
+Texto de referência:
+
+> **Feito com ❤️ para a Bia — porque a melhor parte de cada filme é assistir com você. — Papai**
+
+Regras aprovadas:
+
+- **Um único coração**, somente o que já integra a frase.
+- “— Papai” permanece **na mesma linha de fluxo** da dedicatória; quebra natural apenas se a largura exigir. **Não** forçar bloco/assinatura numa linha separada.
+- **Bia** e **Papai** mantêm aparência de links (sublinhado/acentuação) e levam aos **perfis de Instagram originalmente escolhidos**: `https://www.instagram.com/wanabbia/` e `https://www.instagram.com/michael.felix.dias/`.
+- Links externos com `target="_blank"` e `rel="noopener noreferrer"`.
+- Não remover links só porque Stories deixou de ser recurso do site: a dedicatória é uma área **pessoal do projeto**, não um módulo de compartilhamento.
+- A dedicatória encerra emocionalmente o rodapé; sem ícone extra acima nem placa desenhada ao redor.
+
+### 13.4 Informação legal
+
+O usuário decidiu remover do **rodapé** a linha “Projeto independente, sem afiliação com … · Contato”. Essa informação **continua relevante nas páginas institucionais**, especialmente Sobre e Privacidade. Não recolocá-la no rodapé sem nova decisão; não concluir que a remoção do rodapé significa apagar a política legal inteira.
+
+### 13.5 Como preservar a consistência técnica
+
+- `shared-footer.css` é a fonte de verdade do design transversal. Não recriar `.footer-pages a:hover` divergente inline na home ou nas páginas internas.
+- Estilo de link **hover apenas quando existe mouse real**; Safari touch deve neutralizar highlights retidos.
+- `aria-current` controla a página ativa, não simular estado por clique anterior.
+- O botão fixo `back-to-top` é outro componente compartilhado e pode usar o mesmo arquivo CSS.
+- Os links de navegação são absolutos sob `/maratona-marvel/`, por vezes com query de versão para invalidação de cache. Em reimplementação, substitua por estratégia de cache eficiente, sem quebrar rotas.
+
+---
+
+## 14. Compartilhamento da lista
+
+### 14.1 Requisito aprovado e atual
+
+O link de rodapé **“Indicar pelo WhatsApp”** funciona de forma direta, sem caixa/botão chamativo, sem popover e sem menu intermediário.
+
+- É um link `<a href="https://wa.me/?text=...">` com texto codificado via `encodeURIComponent`.
+- Leva a uma mensagem predefinida, com URL pública **da lista**.
+- Não incorpora progresso, datas, avaliação ou configurações privadas.
+- Possui ícone de mensagem e pequena seta diagonal próxima ao texto; os dois devem parecer parte do mesmo CTA sublinhado, não estar excessivamente separados.
+- O browser/OS decide se abre o app ou interface web do WhatsApp; não prometer que todos os dispositivos possuem app instalado.
+- Novo destino em janela/aba com propriedades de segurança quando pertinente.
+- A implementação utiliza apenas link, sem dependência de `navigator.share` nem imagem gerada.
+
+### 14.2 Mensagem compartilhada aprovada
+
+> 🍿 Já viu todos os filmes da Marvel? Ou quer começar uma maratona e não sabe por onde? 👀
+>
+> Encontrei uma lista interativa com 70 filmes, incluindo MCU, X-Men, Homem-Aranha e Deadpool, em uma ordem recomendada.
+>
+> 🎬 Você marca os que já assistiu, avalia seus favoritos e acompanha o que falta. É um guia de organização, não um serviço de streaming.
+>
+> 👉 https://michaelfdias.github.io/maratona-marvel/
+
+Se o catálogo aumentar, ajustar a contagem em texto e assets junto da atualização de dados.
+
+### 14.3 Soluções anteriores descartadas (NÃO reconstruir automaticamente)
+
+1. Menu expansível com opções separadas WhatsApp / menu nativo / copiar URL. Rejeitado porque adicionava passos e deixava aparência de link “clicado” em touch.
+2. Uso direto de `navigator.share` sem material: Instagram oferecia DM, mas não publicava links clicáveis em Stories.
+3. Arte vertical 1080×1920 com “70 filmes” compartilhada como PNG: estética final insatisfatória.
+4. QR Code na imagem + cópia de link + instrução para adicionar adesivo de Link no Instagram: funcionalidade trabalhosa, experiência dependente do app e ainda sem URL clicável automática.
+5. Após avaliação, **tudo isso foi removido**: `share.js` foi excluído; o produto voltou à simplicidade do link WhatsApp.
+
+**Motivação principal:** não oferecer uma experiência incompleta ou visualmente ruim somente para “suportar” mais destinos. Se uma nova solução de Stories for proposta, deverá ter **conceito visual aprovado, fluxo real testado e link efetivamente acessível**, sem romper a indicação por WhatsApp.
+
+---
+
+## 15. Páginas institucionais
+
+### 15.1 Rotas
+
+| Rota | Propósito |
+| --- | --- |
+| `/maratona-marvel/` | Home interativa / watchlist. |
+| `/maratona-marvel/sobre/` | Contexto e objetivo do projeto. |
+| `/maratona-marvel/ordem-recomendada/` | Justificativa editorial e metodologia da sequência. |
+| `/maratona-marvel/privacidade/` | Armazenamento, analytics, links externos e política de privacidade. |
+
+Cada página usa HTML sem backend; navegação clara de volta à maratona, capa temática, texto legível, rodapé compartilhado e botão de retornar ao topo.
+
+### 15.2 Sobre o projeto
+
+Cobrir as seguintes mensagens:
+- É guia independente, sem cadastro e sem disponibilização de filmes.
+- Catálogo de 70 títulos com MCU, recomendados e opcionais.
+- Progresso individual/local, três filtros, duas ordenações, comentários e sinopses, tema e personalização, export/import.
+- Diferenciar filmes oficiais da cronologia MCU e complementos de outras franquias.
+- Aviso de independência editorial/não afiliação.
+- Contato e sugestões em endereço de e-mail do projeto (no código atual: alias iCloud).
+
+### 15.3 Ordem recomendada
+
+Deve explicar **por que a ordem é híbrida**:
+- MCU na ordem de lançamento como espinha dorsal.
+- X-Men em bloco próprio para permitir reconhecer mutantes e referências em produções multiversais.
+- Trilogia Tobey Maguire e duologia Andrew Garfield antes de *Sem Volta para Casa*.
+- Filmes anteriores de Deadpool antes de *Deadpool & Wolverine*; alguns Quarteto Fantástico opcionais.
+- Fases 4–6 retomam o MCU.
+- Séries como *WandaVision* e *Loki* podem dar contexto, mas não integram o contador de **filmes**.
+- Os três filtros com propósitos distintos.
+- Permitir alternativa por ano de lançamento via configurações na home.
+
+**Não chamar ordenação por ano de estrita sequência de estreia em todas as situações:** o agrupamento ordena por ano e desempata pela sequência editorial, sem data exata por dia/mês.
+
+### 15.4 Privacidade
+
+Explicar com clareza:
+- `localStorage` guarda progresso e preferências; sem conta, sem banco próprio, sem sincronização automática.
+- Exportação/importação de JSON e reset local; limpar storage do navegador também pode apagar registros.
+- Hospedagem GitHub Pages (serviços técnicos de entrega).
+- Cloudflare Web Analytics está instalado para estatísticas de visita/performance. Evitar prometer zero dados técnicos; a política descreve o serviço e remete ao fornecedor.
+- Google, Instagram e WhatsApp são destinos externos; o tratamento de dados por eles segue suas próprias políticas.
+- Endereço de contato disponibilizado em página institucional.
+- O texto atual declara ausência de anúncios Google AdSense; adicionar publicidade exige revisão antes da ativação.
+- Revisar a data “Última atualização” quando política mudar. Nunca copiar data sem verificar atualização real.
+- Diferenciar dados de navegação técnica de dados locais da watchlist.
+
+---
+
+## 16. Acessibilidade, semântica e resiliência
+
+### 16.1 Contratos de teclado/leitor de tela
+
+- Links reais para navegação; botões reais para ações; inputs nativos para checkboxes, data e select.
+- Controles de expansão com `aria-expanded` correto, título e rótulo de ação consistentes, botão da sinopse com `aria-controls`.
+- Barra de progresso com `role=progressbar` e percentagem ARIA atualizada.
+- Modal `<dialog>` com título, foco inicial apropriado e Escape.
+- Barra fixa ao rolar e botão voltar ao topo não devem competir visualmente com modal/drawer.
+- `focus-visible` para teclado; nenhum outline permanente após toque em dispositivo touch.
+- Ícones puramente decorativos marcados `aria-hidden`; icon-only buttons com `aria-label`.
+- Controles com `aria-pressed` quando representam filtro/valor ativo.
+- Notificação de conclusão com `role="status"` e `aria-live="polite"`.
+- Textos que contextualizam filtros devem mudar junto com a seleção, não ficar inconsistentes.
+- Não sacrificar contraste em nome da suavidade.
+
+### 16.2 Preferência de movimento reduzido
+
+- Desativar ou reduzir animações de entrada, accordion, partículas, progresso pulsante e rolagem suave quando sistema solicitar.
+- Manter feedback **estático** suficiente de conclusão mesmo sem confetes.
+- Não impor vibração em ambientes não compatíveis; verificação de suporte e try/catch.
+
+### 16.3 Robustez de dados
+
+- Não assumir `localStorage` sempre disponível: leituras via `try/catch`; escrita com mensagem de erro ou alternativa de exportação.
+- Nunca executar HTML dos títulos ou notas; escapar caracteres especiais antes de usar `innerHTML`.
+- Filtrar IDs importados que não constam da curadoria.
+- Normalizar ratings e datas importadas; considerar migrações explícitas se schema evoluir.
+- Evitar recalcular a UI a cada pixel do gesto de estrelas; usar preview leve e commit ao soltar.
+- Em animações, encerrar timers/listeners/RAF e destruir canvas ao finalizar.
+- Não usar `setInterval` perpétuo sem necessidade.
+- Link de compartilhamento jamais carregar informações privadas da watchlist.
+
+### 16.4 SEO e conteúdo público
+
+- Metas `title` e `description` por página, em português, descritivas e coerentes com conteúdo.
+- Links internos navegáveis mesmo sem aplicação JavaScript quando possível.
+- Conteúdo da home exige JS para lista dinâmica, mas páginas institucionais são HTML textual.
+- Meta `theme-color` ajustada ao tema.
+- **No snapshot da home consultado, não há prova de imagem Open Graph dedicada ou `rel=canonical`**. Considerar melhorias futuras, mas não listar como funcionalidade existente.
+- Evitar títulos e descrições que impliquem oficialidade ou disponibilidade dos filmes.
+
+---
+
+## 17. Decisões arquiteturais e trade-offs (ADRs consolidados)
+
+| ID | Decisão vigente | Alternativa descartada / problema | Por quê |
+| --- | --- | --- | --- |
+| ADR-001 | Site estático, sem conta nem backend de progresso | Login/backend obrigatório | Privacidade, simplicidade, hospedagem de baixo custo. |
+| ADR-002 | `localStorage` e backup JSON | Sync automático não implementado | Autonomia e ausência de infraestrutura. |
+| ADR-003 | 70 longas, 12 blocos, 3 grupos | Lista “tudo é MCU” | Distinguir canonicidade, contexto e curiosidades. |
+| ADR-004 | MCU por lançamento + blocos especiais | Cronologia dos eventos ou mistura cega por ano | Experiência narrativa e conexões reconhecíveis. |
+| ADR-005 | Campo `group` controla filtro, não fase/tier | Inferir de título ou posição | Correção, transparência, previsibilidade. |
+| ADR-006 | Modo minimalista com drawer | Ocultar toda navegação sem recuperação | Foco na lista com controles acessíveis sob demanda. |
+| ADR-007 | Estados de seções salvos | Accordion sem persistência | Não perder organização ao atualizar o site. |
+| ADR-008 | Cabeçalho inteiramente acionável | Apenas pequena seta/título | Ergonomia touch e acessibilidade. |
+| ADR-009 | Checkbox separado de expandir | Clique único para duas ações | Evitar alteração acidental de progresso. |
+| ADR-010 | Datas opcionais; desmarcar limpa data | Botão “X” ou preservação incoerente | UI limpa e semântica consistente. |
+| ADR-011 | Ratings opcionais com arraste e limpeza à esquerda | Botão de excluir estrelas | Menos ruído e interação fluida no celular. |
+| ADR-012 | Confetes discretos por seção, finale rico para 70/70 | Mesmo efeito em todo marco | Ritmo emocional proporcional à conquista. |
+| ADR-013 | Canvas customizado para finale | Biblioteca externa necessária | Controle de forma/performance e ausência de dependência. |
+| ADR-014 | Tema explícito compartilhado | Páginas internas seguem tema OS | Consistência e respeito à escolha do usuário. |
+| ADR-015 | Rodapé créditos finais full-bleed | Coleção de blocos desconexos | Identidade única e encerramento inspirador. |
+| ADR-016 | WhatsApp direto | Menu popover e Stories com arte/QR | Menos passos e fluxo real confiável. |
+| ADR-017 | Dedicatória com um coração, links e assinatura inline | Coração extra, caixa e linha “Papai” isolada | Respeito à mensagem pessoal original. |
+| ADR-018 | Avisos legais nas páginas institucionais | Faixa legal extra no rodapé | Não interromper o encerramento emocional. |
+| ADR-019 | Voltar ao topo opt-out | Sempre visível / sem configuração | Comodidade sem tirar escolha do visitante. |
+| ADR-020 | Hover só para mouse real | Hover retido no Safari | Evitar falso visual de link clicado. |
+| ADR-021 | Arquivo CSS do rodapé compartilhado | Overrides por página | Prevenir divergência e regressões. |
+| ADR-022 | Páginas institucionais separadas | Tudo em popovers na home | SEO, navegação, leitura editorial e privacidade. |
+| ADR-023 | Links dos filmes para busca pública | Player / link de streaming | Manter escopo legal e editorial. |
+| ADR-024 | Sinopses independentes e opt-in | Todos os textos abertos permanentemente | Densidade, legibilidade e spoilers. |
+
+**Como usar os ADRs:** ao mudar uma decisão, explicar o evento, a nova alternativa, as implicações e os testes. Não eliminar o registro antigo como se nunca tivesse sido tentado.
+
