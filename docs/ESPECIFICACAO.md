@@ -1762,7 +1762,7 @@ Ao implementar mudança:
 
 ## 21. Apêndice — histórico de commits consultado
 
-A tabela a seguir registra os commits acessíveis na consulta ao histórico do repositório **até o commit de correção de hover do rodapé** (`88bc5d0`). A ordenação é **cronológica aproximada pelo encadeamento retornado da busca, do mais antigo para o mais recente**. Esta lista é uma referência de auditoria: mensagens de commit resumem ações, mas não substituem leitura de diff ou teste.
+A tabela a seguir registra **87 commits acessíveis na consulta ao histórico**: os **83 primeiros** percorrem a evolução funcional até a correção de hover do rodapé (`88bc5d0`), e os **quatro últimos** representam as etapas iniciais de criação desta documentação. A ordenação é **cronológica aproximada pelo encadeamento retornado da busca, do mais antigo para o mais recente**. O commit final de conclusão desta especificação, posterior à consulta, não aparece na tabela. Esta lista é uma referência de auditoria: mensagens de commit resumem ações, mas não substituem leitura de diff ou teste.
 
 | # | Commit | Mensagem |
 | ---: | --- | --- |
