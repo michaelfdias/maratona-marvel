@@ -60,3 +60,9 @@ html[data-theme="oled"] .modal{
 html[data-theme="oled"] .mini-drawer{
   background:var(--surface)
 }
+
+/* A faixa de créditos permanece full width e adota preto verdadeiro. */
+html[data-theme="oled"] .footer{
+  --credits-bg:#000000;
+  --credits-border:#292929
+}
