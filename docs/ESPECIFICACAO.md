@@ -889,7 +889,10 @@ A interface usa modal HTML `<dialog id="settings">`, com título focável, contr
 
 - O elemento `<dialog id="settings" class="modal">` mantém **borda arredondada nos quatro cantos**, independentemente de a lista de preferências precisar de rolagem no desktop ou celular.
 - A rolagem vertical pertence ao conteúdo interno `.modal-inner`, enquanto o `<dialog>` utiliza `overflow:hidden`. O conteúdo é limitado pela altura disponível, com `overscroll-behavior:contain`, para evitar que a barra de rolagem externa corte os cantos.
-- A barra de rolagem é **estreita e discreta**, com pista transparente e polegar arredondado. A implementação combina `scrollbar-width:thin`/`scrollbar-color` e pseudo-elementos `::-webkit-scrollbar` com recuo vertical, mantendo a cor vinculada ao tema.
+- A barra de rolagem é **fina, suave e arredondada**, com trilho transparente e thumb quase imperceptível no repouso (**cinza com 15% de opacidade no claro**), levemente realçado durante a rolagem e por hover com mouse. O thumb não deve parecer uma faixa permanentemente escura.
+- **Recuo real das extremidades**: o modal externo reserva `padding:10px 0` no desktop e `9px 0` no mobile, enquanto o conteúdo interno tem altura máxima ajustada. Assim o trilho nunca toca o topo ou a base quando se rola até a primeira ou última opção; o fundo e o arredondamento externos continuam intactos.
+- O código mantém a rolagem nativa: WebKit/Chromium usa `::-webkit-scrollbar` de 9px, thumb arredondado e borda da cor da superfície; Firefox usa `scrollbar-width:thin` e `scrollbar-color` em bloco de suporte próprio para não sobrepor o design do Chromium. As três paletas (Claro, Escuro, OLED) definem tons equivalentes.
+- O listener passivo de `scroll` adiciona `is-scrolling` ao modal e reinicia um temporizador de aproximadamente **850ms**. A classe é removida após repouso ou fechamento do modal, com limpeza do timer. O comportamento não bloqueia a rolagem por mouse, trackpad ou toque.
 - Clicar ou tocar **fora da superfície do diálogo** fecha as configurações, tanto em desktop quanto em mobile. A área externa é determinada pelas coordenadas de clique em relação a `getBoundingClientRect()`; o clique só pode encerrar o modal quando `event.target===dialog` **e** as coordenadas estão fora dos limites.
 - Interagir com checkboxes, selects, textos, botões ou a própria barra de rolagem **não** deve fechar a janela.
 - O botão **X** e a tecla **Escape** continuam funcionando e a rotina de fechamento atualiza o progresso fixo corretamente.
@@ -1522,6 +1525,8 @@ Uma captura no desktop mostrou o modal de configurações com os **cantos esquer
 
 **Decisão:** manter o `<dialog>` com `overflow:hidden` e borda arredondada; transferir a rolagem para `.modal-inner`, limitar a altura interna e customizar a scrollbar com trilho transparente, thumb estreito/arredondado e recuo dos cantos. Um listener no próprio `<dialog>` fecha somente quando o alvo do clique é o diálogo (backdrop) e as coordenadas estão fora do retângulo visível da janela.
 
+**Refinamento posterior:** a primeira scrollbar customizada ficou **escura demais mesmo em repouso** e ainda alcançava visualmente os extremos. O CSS foi ajustado para criar **10px de recuo físico em cima/baixo (9px no mobile)**, diminuir largura e contraste da thumb e exibir contraste maior apenas durante a rolagem e hover; o estado transitório some após 850ms. Não usar `margin-block` como único meio de afastar o trilho: o suporte entre navegadores é inconsistente.
+
 **Motivação:** acabamento visual consistente nos cantos dos três temas e comportamento de modal intuitivo em desktop/iPhone, sem fechar ao utilizar controles ou rolar o conteúdo interno.
 
 ### Etapa O — Checkbox estável durante expansão da sinopse no desktop
@@ -1666,6 +1671,11 @@ Os itens seguintes são **casos a testar**, não afirmações de que já tenham 
 | CFG-29 | Clicar/tocar fora do modal em desktop/mobile | Fecha a janela, atualiza progresso fixo e mantém escolhas já feitas. |
 | CFG-30 | Clicar em campo/label/checkbox/select ou arrastar scrollbar | Modal **permanece aberto**; nenhuma interação interna é interpretada como clique fora. |
 | CFG-31 | Usar botão X e Escape | Ambos permanecem funcionais após introdução do fechamento pelo backdrop. |
+| CFG-32 | Abrir modal de configurações no modo Claro e não rolar | Thumb permanece muito discreto, sem parecer uma barra preta persistente. |
+| CFG-33 | Rolar até começo e fim do modal em desktop e mobile | Thumb e trilho permanecem afastados das bordas do modal, sem tocar o raio dos cantos. |
+| CFG-34 | Rolar usando mouse, trackpad e touch | Thumb ganha contraste durante a rolagem e retorna à suavidade após breve repouso (~850ms). |
+| CFG-35 | Fechar o modal enquanto a rolagem ainda está ativa | Temporizador cancelado; estado de destaque não permanece ao reabrir. |
+| CFG-36 | Alternar Claro, Escuro e OLED com modal rolável | Cada tema apresenta thumb proporcionalmente sutil e trilho sem fundo contrastante. |
 | CFG-07 | Ativar modo minimalista | Lista compacta, header/progresso/filtros no drawer. |
 | CFG-08 | Abrir/fechar drawer | Backdrop, foco, Escape e scroll restaurados. |
 | CFG-09 | Desligar modo minimalista | Controles retornam ao fluxo original sem duplicação. |
@@ -1986,7 +1996,7 @@ Estas possibilidades **não são requisitos aprovados**:
 - [ ] Expansão de seção persistida; contador e linha inteira acionáveis; checkbox independente.
 - [ ] Checkbox de **filme** no desktop estável junto ao título ao abrir/fechar sinopses; animação do texto e alinhamento mobile preservados.
 - [ ] Aparência Claro/Escuro/OLED compartilhada nas quatro páginas, independente do OS; preferências e backups antigos migrados sem perda.
-- [ ] Modal e drawer acessíveis; modal com cantos arredondados mesmo com scrollbar, rolagem interna e fechamento por clique/tap fora, além de X/Escape; estilo de foco Safari correto.
+- [ ] Modal e drawer acessíveis; modal com cantos arredondados, scrollbar fina e suave no repouso, margem real nas extremidades e realce transitório ao rolar; fechamento por clique/tap fora, X e Escape; estilo de foco Safari correto.
 - [ ] Modo minimalista funcional; hambúrguer e controle de recolher/expandir alinhados na mesma faixa inicial sem sobreposição; sticky e voltar ao topo sem conflito.
 - [ ] Backup export/import e reset validados.
 - [ ] Rodapé full width sem caixas no WhatsApp/dedicatória; um coração; Papai inline; links Instagram preservados.
