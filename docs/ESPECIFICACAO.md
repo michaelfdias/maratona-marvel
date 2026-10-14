@@ -1377,3 +1377,526 @@ Explicar com clareza:
 
 **Como usar os ADRs:** ao mudar uma decisão, explicar o evento, a nova alternativa, as implicações e os testes. Não eliminar o registro antigo como se nunca tivesse sido tentado.
 
+
+---
+
+## 18. Diário de evolução — por que o produto ficou assim
+
+Esta linha do tempo condensa **decisões do usuário, correções de uso real e mudanças de direção**. Não deve ser confundida com uma ata literal da conversa. O apêndice `21` traz o histórico de commits consultável para auditoria.
+
+### Etapa A — Origem da lista interativa
+
+**Problema inicial:** organizar uma maratona ampla, pública e pessoal sem abrir dezenas de páginas ou cadastrar conta.
+
+**Resultado:**
+- Home publicada no GitHub Pages, URL estável.
+- Dataset único com filmes, fases e grupos de escopo.
+- Busca e filtros para MCU estrito versus abrangência maior.
+- Marcações individuais e cálculo de progresso, dados preservados no navegador.
+- Exportação/importação JSON, pensadas como alternativa prática à sincronização.
+- Configurações de exibição no cliente, sem conta.
+
+**Motivação:** um guia de consulta que o visitante pudesse voltar a usar em qualquer etapa.
+
+### Etapa B — Modo minimalista e controle da densidade
+
+Usuário quis um modo mais limpo para acompanhar o filme seguinte sem metadados desnecessários.
+
+**Evolução:** primeiro redução de informações, depois modo minimalista máximo com drawer; anos mantidos junto dos títulos, capa/progresso/controles transferidos para menu lateral. Houve refinamentos de menu e espaçamento.
+
+**Aprendizado:** “minimalista” não significa remover acesso a funcionalidades; significa mover controles para fora da trilha visual principal.
+
+### Etapa C — Seções recolhíveis e sinopses
+
+A lista longa precisava de melhor escaneabilidade.
+
+**Evolução:** animação de abrir/recolher seções, título inteiro clicável, botão global de recolher todas, contadores estáveis, sinopse individual expansível para todos os 70 filmes. Mais tarde, corrigiram-se a **persistência das seções** e a área de clique do contador (0 / 6).
+
+**Motivação:** navegação de baixo esforço, sem confundir o checkbox de filme com um accordion. O estado deveria sobreviver à atualização da página.
+
+### Etapa D — Progresso e marcos emocionais
+
+A aplicação ganhou celebrações por bloco e por maratona concluída. O final evoluiu de confete simples para partículas cinematográficas e troféu, duração maior e cuidado de performance.
+
+**Motivação:** completar 70 filmes é uma conquista; a celebração precisa ser proporcional sem ser intrusiva ou inacessível.
+
+### Etapa E — Detalhes de interface no iPhone e Safari
+
+Houve correções repetidas para:
+- Centralização de ícones, claquete e numerais do progresso.
+- Consistência de cor/tema no Safari.
+- Checkbox circular com estados marcado/parcial e sem halos persistentes.
+- Configurações com ícones e foco apropriado.
+- Estrelas tocáveis e arrastáveis, limpáveis sem botão adicional.
+- Controle do tamanho do título e quebras em larguras muito pequenas.
+
+**Motivação:** a qualidade percebida é decidida no uso real, não apenas pela validação sintática de JavaScript.
+
+### Etapa F — Comunicação institucional e confiança
+
+Criação das páginas **Sobre**, **Ordem recomendada** e **Privacidade**, além de analytics. Os textos distinguem seleção editorial, MCU oficial, filmes complementares e longa-metragem versus séries.
+
+**Motivação:** não induzir o visitante ao erro sobre o que a lista inclui e como os dados pessoais são tratados.
+
+### Etapa G — Compartilhamento: experimentação e retorno à simplicidade
+
+Trajetória real:
+1. Link discreto “Indicar esta lista” no rodapé com popover de opções.
+2. Compartilhamento pelo sistema operacional, sem menu próprio.
+3. Arte para Stories para tentar oferecer destino de imagem.
+4. Tentativa de QR Code, texto/copiar link e adesivo manual do Instagram.
+5. Avaliação insatisfatória do resultado visual e do acesso sem link clicável.
+6. **Remoção completa** da solução de Stories e do arquivo `share.js`.
+7. **WhatsApp direto** com texto e URL públicos, sem imagem nem UI intermediária.
+
+**Motivação:** fluxo previsível e bom design prevalecem sobre compatibilidade aparente com muitas plataformas.
+
+### Etapa H — Rodapé reconstruído como créditos finais
+
+O usuário identificou falta de composição: rodapé construído por acréscimos sucessivos, com boxes desconexos.
+
+Mudanças aprovadas em sequência:
+1. Conceito **“Toda grande história fica melhor quando é compartilhada.”**
+2. Hierarquia entre convite, backup, navegação e dedicatória.
+3. **Um único coração** no texto da dedicatória.
+4. Links de Instagram de Bia/Papai explicitamente preservados.
+5. Retirada da linha legal/contato ao final do rodapé.
+6. Fundo sutil destacando a área.
+7. Rodapé **full width**, não cartão centralizado.
+8. Remoção das **caixas** do link WhatsApp e da dedicatória.
+9. Assinatura “— Papai” no **mesmo fluxo de linha**.
+10. CSS compartilhado entre as quatro páginas, evitando estilos desalinhados.
+
+**Motivação:** o rodapé deixa de ser um apêndice técnico e torna-se parte significativa da experiência de cinema.
+
+### Etapa I — Navegação utilitária
+
+Introdução do botão flutuante **Voltar ao topo** no canto inferior direito. Requisito adicional: configurável nas opções da home, habilitado por padrão e respeitado em todas as páginas.
+
+**Motivação:** a lista é longa; o visitante deve retornar rapidamente ao início sem perder controle sobre a interface.
+
+### Etapa J — Bugs de persistência, click targets e hover retido
+
+- Persistir seções abertas/fechadas após recarregar.
+- Tornar o contador e toda a linha clicáveis (exceto checkbox).
+- Alinhar visualmente "/" ao ícone e aos números de progresso.
+- Corrigir item “Ordem recomendada” aparecendo branco/sublinhado sem clique.
+- Remover regras CSS antigas conflitantes; restringir `hover` a mouse real.
+- Ajustar distância da seta do WhatsApp ao texto.
+
+**Motivação:** ergonomia coerente, estados visuais verdadeiros e ausência de regressões.
+
+### Etapa K — Documentação como artefato de produto
+
+`README.md` para visão rápida e esta `docs/ESPECIFICACAO.md` como **documentação viva replicável por agentes**. Preserva decisões descartadas, não apenas estado atual, para que outras implementações não repitam caminhos rejeitados.
+
+---
+
+## 19. Matriz de critérios de aceitação (para implementação ou regressão)
+
+Os itens seguintes são **casos a testar**, não afirmações de que já tenham sido executados em navegadores reais. Automatizar o máximo possível e complementar com smoke manual em Safari/iOS, Chromium/desktop e Android quando disponível.
+
+### 19.1 Catálogo e integridade editorial
+
+| ID | Cenário / ação | Resultado esperado |
+| --- | --- | --- |
+| CAT-01 | Carregar a home sem filtros | Exatamente **70 filmes** em **12 seções**. |
+| CAT-02 | Contar grupos no catálogo | 40 MCU, 12 recomendados, 18 opcionais. |
+| CAT-03 | Verificar unicidade dos IDs | Nenhum ID duplicado. |
+| CAT-04 | Verificar sinopses | 70 IDs do catálogo com sinopse associada; nenhum órfão. |
+| CAT-05 | Conferir campos editoriais | PT, EN, year, group, tier, note, star e future preservados. |
+| CAT-06 | Selecionar apenas MCU | Exatamente 40 sem busca. |
+| CAT-07 | Selecionar MCU + recomendados | Exatamente 52 sem busca. |
+| CAT-08 | Selecionar todos | Exatamente 70 sem busca. |
+| CAT-09 | Alternar para ordenação por ano | Agrupamento cronológico por ano, desempate editorial estável. |
+| CAT-10 | Voltar à ordem recomendada | Retorno aos 12 blocos e à sequência editorial; progresso intacto. |
+| CAT-11 | Consultar título futuro | Selo “previsto” apropriado e inclusão na contagem conforme dataset. |
+| CAT-12 | Alterar idioma | Apenas nome apresentado muda; id/progresso/ordem mantidos. |
+
+### 19.2 Busca, filtros e progresso
+
+| ID | Cenário / ação | Resultado esperado |
+| --- | --- | --- |
+| PRO-01 | Buscar título em português | Correspondência case-insensitive. |
+| PRO-02 | Buscar título inglês usando idioma PT | Mesmo filme encontrado. |
+| PRO-03 | Buscar ano numérico | Filmes correspondentes filtrados. |
+| PRO-04 | Buscar string inexistente | Estado vazio legível, progresso sem NaN. |
+| PRO-05 | Limpar campo com × | Texto desaparece e lista retorna ao escopo ativo. |
+| PRO-06 | Marcar único filme | Vistos, restantes, percentual, seção e barra atualizam. |
+| PRO-07 | Desmarcar filme | Decrementa contadores e limpa data. |
+| PRO-08 | Filtrar MCU após marcar recomendado | Marcação do recomendado preservada, invisível no filtro restrito. |
+| PRO-09 | Concluir 100% apenas da busca | **Não** disparar celebração total se houver filmes não vistos fora do resultado. |
+| PRO-10 | Concluir os 70 filmes | Comemoração final uma vez na transição. |
+| PRO-11 | Atualizar com 70 vistos | Sem disparar automaticamente nova comemoração. |
+| PRO-12 | Filtro com 0 resultados | Barra acessível válida e textos coerentes. |
+
+### 19.3 Seções e marcação coletiva
+
+| ID | Cenário / ação | Resultado esperado |
+| --- | --- | --- |
+| SEC-01 | Toque no título da seção | Alterna expandido/recolhido. |
+| SEC-02 | Toque no subtítulo | Mesma ação. |
+| SEC-03 | Toque no contador “0 / 6” | Mesma ação. |
+| SEC-04 | Toque na seta | Mesma ação. |
+| SEC-05 | Toque no espaço vazio da linha | Mesma ação. |
+| SEC-06 | Toque no checkbox circular | Marca/desmarca filmes; **não** alterna expansão. |
+| SEC-07 | Marcar parte da seção | Checkbox fica indeterminado/amarelo. |
+| SEC-08 | Marcar todos da seção | Checkbox fica verde/marcado; contador completo. |
+| SEC-09 | Recolher seções diferentes e recarregar | Todas mantêm estado individual. |
+| SEC-10 | Recolher todas e recarregar | Todas continuam recolhidas. |
+| SEC-11 | Alternar filtro e voltar | Estados de seções ocultas preservados. |
+| SEC-12 | Ordenar por ano | Grupos anuais abrem/recolhem independentemente. |
+| SEC-13 | Selecionar via teclado | Botões e checkbox respondem a Enter/Espaço sem dupla ativação. |
+| SEC-14 | Ler `aria-expanded` | Reflete o estado visual após cada toggle. |
+| SEC-15 | Completar seção | Efeito de confetti curto; não final de 70. |
+| SEC-16 | Marcar uma seção sob filtro | Altera apenas filmes presentes naquele cabeçalho. |
+
+### 19.4 Detalhe do filme
+
+| ID | Cenário / ação | Resultado esperado |
+| --- | --- | --- |
+| FIL-01 | Clicar título do filme | Pesquisa Google em outra aba, nunca player. |
+| FIL-02 | Marcar filme sem data | Data local de hoje é salva. |
+| FIL-03 | Marcar filme com data antiga | Data anterior é mantida. |
+| FIL-04 | Desmarcar | Data vira string vazia, avaliação não é apagada. |
+| FIL-05 | Mostrar datas | Inputs habilitados apenas em filmes vistos. |
+| FIL-06 | Ocultar datas | UI esconde campos, storage permanece. |
+| FIL-07 | Abrir sinopse A e B | Ambas podem permanecer abertas. |
+| FIL-08 | Desabilitar comentários/sinopses | Conteúdo fica invisível sem perda de progresso. |
+| FIL-09 | Ativar avaliações | Cinco estrelas por filme, valores 1–5. |
+| FIL-10 | Arrastar estrelas para direita/esquerda | Prévia coerente e commit ao soltar. |
+| FIL-11 | Arrastar intencionalmente à esquerda da primeira | Rating zera. |
+| FIL-12 | Tocar apenas primeira estrela | Rating vira 1, não zera. |
+| FIL-13 | Cancelar pointer | Não salvar valor parcial indesejado. |
+| FIL-14 | Pressionar Delete na estrela focada | Limpa avaliação. |
+| FIL-15 | Rolagem vertical por cima das estrelas | Página continua rolando normalmente. |
+
+### 19.5 Configurações, tema e persistência
+
+| ID | Cenário / ação | Resultado esperado |
+| --- | --- | --- |
+| CFG-01 | Primeira visita, iPhone com tema do SO escuro | Site **claro** por padrão. |
+| CFG-02 | Ativar modo escuro na home | Home e páginas internas escuras. |
+| CFG-03 | Desativar modo escuro na home | Todas as páginas claras, mesmo com SO escuro. |
+| CFG-04 | Navegar para uma página interna e voltar (Safari) | Tema sincronizado após `pageshow`. |
+| CFG-05 | Abrir modal de configurações | Título e controles acessíveis, sem destaque visual touch preso. |
+| CFG-06 | Fechar com Escape | Modal fecha e layout volta ao normal. |
+| CFG-07 | Ativar modo minimalista | Lista compacta, header/progresso/filtros no drawer. |
+| CFG-08 | Abrir/fechar drawer | Backdrop, foco, Escape e scroll restaurados. |
+| CFG-09 | Desligar modo minimalista | Controles retornam ao fluxo original sem duplicação. |
+| CFG-10 | Rolar abaixo do progresso original | Sticky aparece somente se habilitado, não minimalista e sem modal. |
+| CFG-11 | Habilitar voltar ao topo | Atalho aparece após >450px de rolagem em todas as páginas. |
+| CFG-12 | Desabilitar voltar ao topo | Atalho some imediatamente e continua oculto após reload. |
+| CFG-13 | Clicar voltar ao topo | Scroll retorna ao início e botão some. |
+| CFG-14 | Acessibilidade: reduzir movimento | Scroll instantâneo, sem confetti animado; conclusão ainda comunicada. |
+| CFG-15 | Recarga após ajustar preferências | Preferências e dados íntegros. |
+| CFG-16 | Salvar JSON inválido em storage manualmente | Aplicação não quebra fatalmente; padrões seguros. |
+
+### 19.6 Backup e privacidade
+
+| ID | Cenário / ação | Resultado esperado |
+| --- | --- | --- |
+| DAT-01 | Exportar | Download `maratona-marvel-progresso.json` com `version:2`, timestamp, progress e preferences. |
+| DAT-02 | Abrir JSON exportado | Estrutura legível/parseável. |
+| DAT-03 | Importar arquivo válido | Solicita confirmação antes de substituir. |
+| DAT-04 | Importar e confirmar | Progressos/datas/ratings e preferências permitidas restauradas. |
+| DAT-05 | Importar e cancelar | Progresso anterior inalterado. |
+| DAT-06 | Importar JSON inválido | Erro de formato sem quebrar app. |
+| DAT-07 | Importar ID inexistente | Descartado, sem linha desconhecida. |
+| DAT-08 | Importar rating fora de 1–5 | Normalizado a zero. |
+| DAT-09 | Importar data em formato inválido | Normalizada a vazio. |
+| DAT-10 | Exportar com seções recolhidas | Array de seções presente nas preferências. |
+| DAT-11 | Importar seções recolhidas | Estado é restaurado. |
+| DAT-12 | Executar “Apagar tudo” e cancelar | Nenhum dado alterado. |
+| DAT-13 | Confirmar “Apagar tudo” | Progresso zerado, preferências padrão, seções abertas. |
+| DAT-14 | Compartilhar no WhatsApp | Contém apenas texto público e URL da lista; **sem dados privados**. |
+| DAT-15 | Abrir políticas | Explicação correta de storage e serviços externos. |
+
+### 19.7 Celebração, rodapé e touch
+
+| ID | Cenário / ação | Resultado esperado |
+| --- | --- | --- |
+| UI-01 | Concluir seção comum | Efeito curto, sem bloquear clique. |
+| UI-02 | Concluir todos os 70 | Efeito de aproximadamente 10,5s e mensagem de troféu. |
+| UI-03 | Desmarcar enquanto final roda | Canvas/banner/timers interrompidos. |
+| UI-04 | Ativar reduced motion | Nada de partículas animadas ou vibração exigida. |
+| UI-05 | Abrir página em iPhone pequeno | Sem scroll horizontal por overflow. |
+| UI-06 | Conferir título + claquete | Ícone e texto visualmente centralizados. |
+| UI-07 | Conferir película + “0 / 70” | Barra '/' centrada verticalmente entre números e ícone. |
+| UI-08 | Rolar até rodapé | Fundo ocupa **100% da largura da tela**. |
+| UI-09 | Conferir WhatsApp | Link sublinhado, sem box; seta próxima do texto. |
+| UI-10 | Conferir dedicatória | Um coração, sem box, Papai inline, links Instagram ativos. |
+| UI-11 | Conferir conteúdo institucional | Links Sobre/Ordem/Privacidade; sem faixa legal redundante no rodapé. |
+| UI-12 | Tocar próximo aos links no Safari | “Ordem recomendada” não fica falsamente branco/sublinhado. |
+| UI-13 | Passar mouse no desktop | Hover transitório ocorre e termina ao sair. |
+| UI-14 | Navegar via teclado | Foco perceptível somente quando apropriado. |
+| UI-15 | Abrir páginas internas | Rodapé e tema coerentes, botão voltar ao topo presente. |
+| UI-16 | Tentar compartilhamento Stories | **Não há arte, QR Code ou menu de Stories** no produto vigente. |
+
+### 19.8 Cobertura mínima por ambiente
+
+| Ambiente | Teste prioritário |
+| --- | --- |
+| Safari iOS em iPhone médio e pequeno | Foco/hover retido, seleção de checkbox, contador tocável, modal, toque de estrela, rodapé full-bleed e safe area. |
+| Safari macOS | Métricas tipográficas, barra de progresso, inputs e CSS de estados. |
+| Chrome/Edge desktop | Teclado, hover real, navegação, imports/download JSON, desktop grid e filtros. |
+| Chrome Android | Web touch, estrelas, data, scroll, link WhatsApp, rodapé. |
+| Viewport estreito (320–375px) | Sem overflow, legibilidade, controles não sobrepostos, drawer acessível. |
+| Preferência reduced motion | Nada de animações obrigatórias; mensagens de estado permanecem. |
+| Armazenamento vazio, inválido e bloqueado | Sem crash; UX permite continuar/entender limitação. |
+| Navegação histórico/bfcache | Preferências de tema e voltar ao topo sincronizadas. |
+
+---
+
+## 20. Guia operacional para outra IA implementar projeto equivalente
+
+### 20.1 Entregáveis esperados
+
+Implementar e entregar:
+1. Aplicação estática operacional com todos os dados, páginas e interações aqui definidos.
+2. Controle de progressos e preferências locais, export/import com esquema testado.
+3. UI responsiva, acessível, focada em filmes, com tema e modo minimalista.
+4. CTA WhatsApp direto e rodapé de créditos finais.
+5. Comemorações por seção e maratona concluída.
+6. Testes automatizados de domínio e integração e relatório honesto de smoke visual.
+7. Documentação atualizada com decisões de divergência.
+
+### 20.2 Sequência sugerida de desenvolvimento
+
+**Fase 0 — Descoberta:** ler README/especificação; enumerar rotas, IDs, 70 itens e 70 sinopses; confirmar sem backend/login.
+
+**Fase 1 — Dados e domínio:** modelar `Film`/`Section`/`Progress`/`Preferences`, IDs estáveis, filtros e contagens; testes de invariantes 70/40/12/18.
+
+**Fase 2 — Listagem base:** renderizar capa, estatísticas, filtros, busca, seções e linha do filme. Validar layout mobile antes de adicionar animações.
+
+**Fase 3 — Persistência:** checkbox individual e de seção, datas, avaliações, estado de expansão, localStorage, export/import e reset.
+
+**Fase 4 — Personalização:** modal, idioma, ordem anual, notas/sinopses, dark mode e minimalista/drawer.
+
+**Fase 5 — Experiência longitudinal:** sticky progress, voltar ao topo em todas as páginas, animações, celebração final e redução de movimento.
+
+**Fase 6 — Institucional:** Sobre, Ordem recomendada, Privacidade, rodapé compartilhado, WhatsApp, dedicatória.
+
+**Fase 7 — Qualidade:** executar matriz de testes e revisitar correções históricas de Safari/iOS; publicar em caminho base correto e verificar build/host.
+
+### 20.3 Invariantes de dados recomendados para testes de unidade
+
+Exemplos em pseudocódigo independente de framework:
+
+```text
+assert sections.length === 12
+assert flatten(sections).length === 70
+assert unique(ids).length === 70
+assert every(id in synopses for id in ids)
+assert count(group=="mcu") === 40
+assert count(group=="recommended") === 12
+assert count(group=="optional") === 18
+assert count(tier=="optional") === 18
+
+assert filter("all").length === 70
+assert filter("mcu").length === 40
+assert filter("recommended").length === 52
+
+assert selectedProgress(watched: 1, selectedTotal: 2) == 50
+assert selectedProgress(watched: 0, selectedTotal: 0) == 0
+assert marathonComplete() == all70IDsWatched
+assert not marathonComplete() when 69 of 70 are watched
+
+assert unwatch(movie).date == ""
+assert unwatch(movie).rating == previousRating
+assert reset().collapsedSections == []
+assert importUnknownID().doesNotCreateFilm
+assert shareURL.hasNoUserProgress
+```
+
+### 20.4 Condições de não regressão
+
+Antes de alterar recursos do projeto existente:
+- Recontar 70 títulos e comparar IDs e ordem (snapshot);
+- Verificar renderização das 4 páginas e os 2 assets compartilhados;
+- Validar JS e CSS e não alterar cópias editoriais inadvertidamente;
+- Confirmar persistência de progresso e preferências em reload;
+- Confirmar que compartilhar não tem menu/Stories;
+- Confirmar o rodapé sem boxes e sem faixa legal;
+- Conferir estados de foco no Safari e mouse desktop;
+- Checar que `README.md` e este documento continuam consistentes;
+- Gerar commit que descreva **o que mudou e por quê**, com breve nota de verificação.
+
+### 20.5 Erros a evitar
+
+- Recriar apenas uma lista visualmente parecida e ignorar armazenamento, filtros ou UX touch.
+- Trocar `id` por posição no array, quebrando backups.
+- Confundir `tier=high` com `group=mcu`; há complementos recomendados de alta prioridade.
+- Classificar todo filme da Marvel como canônico do MCU.
+- Tratar 100% de filtro como fim da maratona.
+- Acrescentar séries ao contador sem aprovação editorial.
+- Fazer a página institucional seguir tema do OS e a home seguir preferência do site.
+- Dar ao clique no checkbox uma segunda ação de abrir/recolher.
+- Reintroduzir hover CSS antigo retido no Safari ou remover todos os estilos de foco.
+- Inserir uma segunda marca de coração ou forçar assinatura do Papai a outra linha.
+- Transformar o rodapé novamente em coleção de cards.
+- Reintroduzir cartaz de Stories/QR Code sem decisão nova.
+- Adicionar anúncios/login/cloud-sync por suposição.
+- Declarar testes em dispositivo real que não foram executados.
+
+### 20.6 Prompt de handoff para Claude Code ou outro agente
+
+> Reconstrua uma aplicação web funcionalmente equivalente à **Maratona Marvel** a partir de `docs/ESPECIFICACAO.md`, usando os dados completos do catálogo e sinopses ali contidos. Preserve integralmente os contratos de dados, regras de progresso, filtros, UI responsiva, modo minimalista, temas sincronizados, expansão persistida das seções, ratings por toque, backup JSON, celebrações acessíveis e rodapé de créditos finais. Não implemente recursos explicitamente descontinuados. Pode escolher uma arquitetura modular, mas mantenha implantação estática simples e nenhum backend/login. Entregue testes automatizados, smoke em mobile/desktop quando houver ambiente, documentação de diferenças e relatório honesto de validação.
+
+### 20.7 Orientações de atualização desta documentação viva
+
+Ao implementar mudança:
+
+1. Registre **data, contexto, problema, alternativas e decisão** no diário `18` ou em ADR novo.
+2. Atualize **Estado atual/contratos** nas seções 1–17; não deixe requisito antigo vigente por engano.
+3. Ajuste os **critérios de aceite** `19`, incluindo não regressão relevante.
+4. Se catálogo for alterado, atualizar quantitativos, tabela e sinopses, com migração de IDs se necessário.
+5. Se alterar storage, versionar schema e documentar compatibilidade com backups existentes.
+6. Se alterar privacidade/analytics/links externos, revisar página `privacidade/index.html`.
+7. Ajustar `README.md` se mudanças forem visíveis ou afetarem instalação.
+8. Referenciar commits que materializaram a decisão; marcar tentativa descartada como **descontinuada**.
+9. Diferenciar comportamento observado em navegador real de resultado inferido por leitura/teste de código.
+10. Conferir ambos os temas e as quatro rotas antes de declarar publicação bem-sucedida.
+
+---
+
+## 21. Apêndice — histórico de commits consultado
+
+A tabela a seguir registra os commits acessíveis na consulta ao histórico do repositório **até o commit de correção de hover do rodapé** (`88bc5d0`). A ordenação é **cronológica aproximada pelo encadeamento retornado da busca, do mais antigo para o mais recente**. Esta lista é uma referência de auditoria: mensagens de commit resumem ações, mas não substituem leitura de diff ou teste.
+
+| # | Commit | Mensagem |
+| ---: | --- | --- |
+| 1 | [`083ec7ae0`](https://github.com/michaelfdias/maratona-marvel/commit/083ec7ae044d5b4b1adb2c03d2204284614fa027) | Publica Maratona Marvel no GitHub Pages |
+| 2 | [`b912a0f91`](https://github.com/michaelfdias/maratona-marvel/commit/b912a0f91547e1a0840cda8486bb43e877fd9762) | Permite limpar data de exibição no celular |
+| 3 | [`d73455d11`](https://github.com/michaelfdias/maratona-marvel/commit/d73455d11a068b80198d7d2913bd864189970e76) | Remove botão de limpar data e apaga data ao desmarcar filme |
+| 4 | [`d710d96b4`](https://github.com/michaelfdias/maratona-marvel/commit/d710d96b46fa21c471ecb9b742d42d901962bed0) | Adiciona modo minimalista máximo com menu lateral |
+| 5 | [`e5e4775c0`](https://github.com/michaelfdias/maratona-marvel/commit/e5e4775c096e09ccc5a706e2c9918e53c56c3b19) | Ajusta ano de lançamento no modo minimalista |
+| 6 | [`aa422a660`](https://github.com/michaelfdias/maratona-marvel/commit/aa422a660cfdfb59c605cfd3c419cc6d7171fe31) | Ajusta espaçamento minimalista e adiciona seções recolhíveis e busca móvel |
+| 7 | [`e078dece6`](https://github.com/michaelfdias/maratona-marvel/commit/e078dece6ded0aa749323457f1ce5ecff732a372) | Refina o espaçamento e a animação das seções recolhíveis |
+| 8 | [`10b23ec24`](https://github.com/michaelfdias/maratona-marvel/commit/10b23ec245dbbe3a00b245583af05130d9a80bbf) | Centraliza ícones do menu e adiciona celebrações por seção e final |
+| 9 | [`b9f1fb0fa`](https://github.com/michaelfdias/maratona-marvel/commit/b9f1fb0fad6b65f7a2d17d4593b01651b39c7ccd) | Permite expandir seções clicando em toda a área do título |
+| 10 | [`0ceaedccf`](https://github.com/michaelfdias/maratona-marvel/commit/0ceaedccfea9a557f35de4bd4ed942aeb3ea98b5) | Remove sublinhado ao tocar no título das seções |
+| 11 | [`ce2e12a3c`](https://github.com/michaelfdias/maratona-marvel/commit/ce2e12a3c0286fcadccce7d546eb3b20006d3408) | Corrige visibilidade do botão hambúrguer fora do modo minimalista |
+| 12 | [`21706098e`](https://github.com/michaelfdias/maratona-marvel/commit/21706098eabdbbf5256bcfa58e76baeac69e61ef) | Adiciona sinopses individuais com dropdown animado aos 70 filmes |
+| 13 | [`630775093`](https://github.com/michaelfdias/maratona-marvel/commit/63077509366a319b34d3885f24052ab89fe988d7) | Refina os títulos das fases e adiciona links de Instagram na dedicatória |
+| 14 | [`27930a584`](https://github.com/michaelfdias/maratona-marvel/commit/27930a5848d21b85ea2af060a0063f7f4c8c275b) | Refina links da dedicatória e torna a capa full bleed no mobile |
+| 15 | [`41d3f269c`](https://github.com/michaelfdias/maratona-marvel/commit/41d3f269c96c41a30333184593607c6e5752779c) | Alinha capa ao topo da tela no mobile |
+| 16 | [`10b910c5e`](https://github.com/michaelfdias/maratona-marvel/commit/10b910c5e9e5409fd7b46328d4ae35a6afc62d56) | Adiciona Cloudflare Web Analytics |
+| 17 | [`0537474ea`](https://github.com/michaelfdias/maratona-marvel/commit/0537474ea314e50bdf434c6c651d74e5181b94a8) | Remove sublinhado de filmes e destaca levemente títulos de seções |
+| 18 | [`d832c48ab`](https://github.com/michaelfdias/maratona-marvel/commit/d832c48abbc8268177229f808721890d48d805ab) | Cria página institucional sobre |
+| 19 | [`06c031e96`](https://github.com/michaelfdias/maratona-marvel/commit/06c031e9630c42e115de7c93826c676137ea98b4) | Cria página institucional ordem-recomendada |
+| 20 | [`f6e1a41f0`](https://github.com/michaelfdias/maratona-marvel/commit/f6e1a41f06ac7fc2a93331e54290a648c247c649) | Cria página institucional privacidade |
+| 21 | [`de6bb7549`](https://github.com/michaelfdias/maratona-marvel/commit/de6bb75494229a37484ec2b3df49c579a04224be) | Adiciona links institucionais ao rodapé da Maratona Marvel |
+| 22 | [`83961920f`](https://github.com/michaelfdias/maratona-marvel/commit/83961920f6e2928d017fe8151573c44a1669f186) | Atualiza a comunicação, SEO e nomes das seções da maratona |
+| 23 | [`9669a4a27`](https://github.com/michaelfdias/maratona-marvel/commit/9669a4a27de5e8d14ce7b3f7e346107e54038ff5) | Melhora o título da página Sobre a Maratona Marvel |
+| 24 | [`f2db47085`](https://github.com/michaelfdias/maratona-marvel/commit/f2db47085296ec32c6746b61f39d3c651053bceb) | Torna a metodologia mais clara nos títulos e filtros |
+| 25 | [`52b26cc5a`](https://github.com/michaelfdias/maratona-marvel/commit/52b26cc5ad6af37b71ba9c1a150bde54bb9c983c) | Inclui controle para expandir e recolher todas as seções |
+| 26 | [`7eddfaaec`](https://github.com/michaelfdias/maratona-marvel/commit/7eddfaaec36d1b3c00d65c463a343831bd2b6ce7) | Alinha espaçamento do controle de seções no modo minimalista |
+| 27 | [`774965fe2`](https://github.com/michaelfdias/maratona-marvel/commit/774965fe2bf89fd63a7f5a6a4de3b5141f85ea23) | Revê textos, ícones e acessibilidade do painel de configurações |
+| 28 | [`8430d2273`](https://github.com/michaelfdias/maratona-marvel/commit/8430d22737f56a866d07421fc7fd378325ea885a) | Remove destaque inicial do botão fechar configurações mantendo foco acessível |
+| 29 | [`3b2e84a55`](https://github.com/michaelfdias/maratona-marvel/commit/3b2e84a559100878fc0257a20f1c29522532b1ca) | Melhora legibilidade do menu lateral e configurações |
+| 30 | [`b754e0999`](https://github.com/michaelfdias/maratona-marvel/commit/b754e0999dc3a71c265d0e90e20ef5a497a46ca3) | Adiciona checks circulares SVG e estado parcial nas seções; remove seta dos filmes |
+| 31 | [`c8e55d036`](https://github.com/michaelfdias/maratona-marvel/commit/c8e55d036722ce1cceb6c28ea013ba6939c84aa7) | Ajusta contraste dos checkboxes SVG no tema escuro |
+| 32 | [`803269997`](https://github.com/michaelfdias/maratona-marvel/commit/8032699978f77cf8e4994a3db96a118e97a280f1) | Centraliza check SVG, colore estado das seções e estabiliza contadores |
+| 33 | [`18fb28a4d`](https://github.com/michaelfdias/maratona-marvel/commit/18fb28a4d2bc2eb253115e856b52adc1f66a5f25) | Melhora tipografia mobile, legibilidade de sinopses e orientações da maratona |
+| 34 | [`bca3c9209`](https://github.com/michaelfdias/maratona-marvel/commit/bca3c920921815c35106eac7fdf470da41022324) | Adiciona claquete Lucide ao título e película ao progresso; atualiza vermelho da capa |
+| 35 | [`391b468ab`](https://github.com/michaelfdias/maratona-marvel/commit/391b468abd111b2c2e819a566f8398645515f061) | Unifica checkboxes circulares nas configurações e na lista de filmes |
+| 36 | [`9befddc6c`](https://github.com/michaelfdias/maratona-marvel/commit/9befddc6cc3ed92a766b4f6148bb19130fe3b3a0) | Alinha fundo do filtro ativo ao vermelho da capa nos dois temas |
+| 37 | [`05c16914e`](https://github.com/michaelfdias/maratona-marvel/commit/05c16914ed0ca000bafa1b9d58955ccabecef805) | Evita contorno de foco nos checkboxes após toque sem prejudicar navegação por teclado |
+| 38 | [`17496b28a`](https://github.com/michaelfdias/maratona-marvel/commit/17496b28a37f7c2c95e89ea66f7b516027cb3fbe) | Centraliza claquete com título usando inline-flex responsivo |
+| 39 | [`0a3339ecd`](https://github.com/michaelfdias/maratona-marvel/commit/0a3339ecd705782f4f7e4ab1b0733437383e4764) | Adiciona avaliação por arraste com limpeza à esquerda e remove X |
+| 40 | [`3662149d9`](https://github.com/michaelfdias/maratona-marvel/commit/3662149d97d352d80a58cd25abe6b9eb3e1769ec) | Corrige diferença de tamanho entre Maratona e Marvel no Safari |
+| 41 | [`86d3f04c7`](https://github.com/michaelfdias/maratona-marvel/commit/86d3f04c70f961ce771c44c02dd1b527e96b32e3) | Centraliza definitivamente claquete e ícone de progresso com layout flex consistente |
+| 42 | [`0b50d0c5c`](https://github.com/michaelfdias/maratona-marvel/commit/0b50d0c5c474c8cd60c86951ec23454374109e44) | Corrige bordas persistentes dos checkboxes no Safari touch |
+| 43 | [`e0469f69d`](https://github.com/michaelfdias/maratona-marvel/commit/e0469f69d93aad3f5ee951addfe1c46b638b0e69) | Adiciona convite discreto no rodapé para indicar a lista por WhatsApp e outros apps |
+| 44 | [`ef435449f`](https://github.com/michaelfdias/maratona-marvel/commit/ef435449f29933b7c07df4eaa50403bb77deffca) | Celebra maratona concluída com chuva cinematográfica, estrelas, películas e troféu |
+| 45 | [`2cf43e4d0`](https://github.com/michaelfdias/maratona-marvel/commit/2cf43e4d05c614a0626c39f101a2d252997b2d15) | Substitui opções de indicação pelo compartilhamento nativo com arte para Stories |
+| 46 | [`8fd3af150`](https://github.com/michaelfdias/maratona-marvel/commit/8fd3af15029a81eaffddb0905cdc7e6aaf1bd7ca) | Adiciona QR Code ao Story e copia link para adesivo do Instagram |
+| 47 | [`b7daec4b7`](https://github.com/michaelfdias/maratona-marvel/commit/b7daec4b772c1e1b36ce4720c5e3402199efc5b3) | Mantém orientação para Stories discreta no rodapé |
+| 48 | [`8158fcd22`](https://github.com/michaelfdias/maratona-marvel/commit/8158fcd22d48fa7f8d80c7619f83cacd0f5397c5) | Centraliza compartilhamento nativo do projeto entre todas as páginas |
+| 49 | [`b4f6891f0`](https://github.com/michaelfdias/maratona-marvel/commit/b4f6891f03070af8bdb2497ffd5d1c305c9f8f35) | Cria estilo de rodapé unificado para todas as páginas |
+| 50 | [`b8bf4f60e`](https://github.com/michaelfdias/maratona-marvel/commit/b8bf4f60e7677c4ce40456ccfaa60200c101f6b5) | Sincroniza tema e padroniza rodapé da Maratona Marvel |
+| 51 | [`c1896c9ba`](https://github.com/michaelfdias/maratona-marvel/commit/c1896c9ba2174974b4c1c062f7b4b6926868b5cc) | Sincroniza tema e padroniza rodapé da Maratona Marvel |
+| 52 | [`e8836f219`](https://github.com/michaelfdias/maratona-marvel/commit/e8836f219c1909d5985f71eedc2ea3fb929acfe2) | Sincroniza tema e padroniza rodapé da Maratona Marvel |
+| 53 | [`f24201737`](https://github.com/michaelfdias/maratona-marvel/commit/f242017371445339258aa93458b2a4bf3515712c) | Sincroniza tema e padroniza rodapé da Maratona Marvel |
+| 54 | [`edb61721a`](https://github.com/michaelfdias/maratona-marvel/commit/edb61721a1f67fdcb1533fea015e7c670b0a39c6) | Ajusta especificidade da dica de compartilhamento no rodapé comum |
+| 55 | [`8cd545f0f`](https://github.com/michaelfdias/maratona-marvel/commit/8cd545f0f7f7e4daa5c3b79a62c6e44ef8b0afbd) | Iguala espaçamento da navegação em todos os rodapés |
+| 56 | [`ff1d4425d`](https://github.com/michaelfdias/maratona-marvel/commit/ff1d4425d8f0f181adbabe12d8a75bfac0db26a8) | Simplifica indicação para WhatsApp direto e remove compartilhamento de Stories |
+| 57 | [`ae782294f`](https://github.com/michaelfdias/maratona-marvel/commit/ae782294f649d5628912cb9f8f8e2b2f721d7de4) | Simplifica indicação para WhatsApp direto e remove compartilhamento de Stories |
+| 58 | [`85910f1d6`](https://github.com/michaelfdias/maratona-marvel/commit/85910f1d6511bee8ff9f72fa2359902b99fbe546) | Simplifica indicação para WhatsApp direto e remove compartilhamento de Stories |
+| 59 | [`af705c1f8`](https://github.com/michaelfdias/maratona-marvel/commit/af705c1f88b4a00f4e902abb7de34edb233351a6) | Simplifica indicação para WhatsApp direto e remove compartilhamento de Stories |
+| 60 | [`98c46bae5`](https://github.com/michaelfdias/maratona-marvel/commit/98c46bae5b2460ae483e6ee9cf94959ec1dbd110) | Remove estilos obsoletos de Stories do rodapé compartilhado |
+| 61 | [`7ee21f00e`](https://github.com/michaelfdias/maratona-marvel/commit/7ee21f00e19f2ad9de523e5eefb168777ee51732) | Remove geração de arte, QR Code e compartilhamento nativo descontinuados |
+| 62 | [`5b59e7c5b`](https://github.com/michaelfdias/maratona-marvel/commit/5b59e7c5be544a64afb0e81a084fc27f46b82131) | Corrige tema claro nas paginas e atualiza tema ao voltar no Safari |
+| 63 | [`9939dd724`](https://github.com/michaelfdias/maratona-marvel/commit/9939dd7247864816afb35beb2cc2e0975702e465) | Corrige tema claro nas paginas e atualiza tema ao voltar no Safari |
+| 64 | [`c4e91f6bc`](https://github.com/michaelfdias/maratona-marvel/commit/c4e91f6bc2c7f374deed0b181b5ad466d5a24207) | Corrige tema claro nas paginas e atualiza tema ao voltar no Safari |
+| 65 | [`27275d0d2`](https://github.com/michaelfdias/maratona-marvel/commit/27275d0d2f4c5a27aef25fc081b4375fa57224ca) | Corrige tema claro nas paginas e atualiza tema ao voltar no Safari |
+| 66 | [`cd343a91a`](https://github.com/michaelfdias/maratona-marvel/commit/cd343a91addcc072785d6f329eea5861dd4abec4) | Redesenha rodapé como créditos finais com fundo suave e identidade única |
+| 67 | [`ec289c015`](https://github.com/michaelfdias/maratona-marvel/commit/ec289c01519ce52aa9e87194c82cd7c94694e839) | Aplica rodapé de créditos finais com fundo suave e dedicatória preservada |
+| 68 | [`fd8134706`](https://github.com/michaelfdias/maratona-marvel/commit/fd8134706105f8aa0812278904bf70ecff6e1aad) | Aplica rodapé de créditos finais com fundo suave e dedicatória preservada |
+| 69 | [`3be7fa745`](https://github.com/michaelfdias/maratona-marvel/commit/3be7fa745400e02e4178b43e2c62ef46f578e797) | Aplica rodapé de créditos finais com fundo suave e dedicatória preservada |
+| 70 | [`5a21adb2c`](https://github.com/michaelfdias/maratona-marvel/commit/5a21adb2ca138944b4a53dee2eca5a1191340cc4) | Aplica rodapé de créditos finais com fundo suave e dedicatória preservada |
+| 71 | [`a7dd48cc3`](https://github.com/michaelfdias/maratona-marvel/commit/a7dd48cc31b0fb3368a1aa81726cfaa5d70950e8) | Torna rodapé full-bleed, remove caixas e adiciona estilo de voltar ao topo |
+| 72 | [`5ffaa0b01`](https://github.com/michaelfdias/maratona-marvel/commit/5ffaa0b01b6e0276887db1582915f7081dbd6794) | Adiciona botão de voltar ao topo compartilhado e configurável |
+| 73 | [`f377ddab0`](https://github.com/michaelfdias/maratona-marvel/commit/f377ddab03bb5151ecc0d9f1b655d06ccd799104) | Amplia rodapé para tela inteira e adiciona voltar ao topo configurável |
+| 74 | [`248407beb`](https://github.com/michaelfdias/maratona-marvel/commit/248407bebd918252b0215e482e468013f9772f71) | Amplia rodapé para tela inteira e adiciona voltar ao topo configurável |
+| 75 | [`4f37fc741`](https://github.com/michaelfdias/maratona-marvel/commit/4f37fc741da899537f3af4a6c846348ffb03788f) | Amplia rodapé para tela inteira e adiciona voltar ao topo configurável |
+| 76 | [`851efa86f`](https://github.com/michaelfdias/maratona-marvel/commit/851efa86ffe039e33c33d973ffdf0c243e75b307) | Amplia rodapé para tela inteira e adiciona voltar ao topo configurável |
+| 77 | [`21914fb4c`](https://github.com/michaelfdias/maratona-marvel/commit/21914fb4c6182a85e4d0f7dcb47d8f5039fee729) | Alinha início do rodapé full-bleed ao conteúdo sem espaçamento excessivo |
+| 78 | [`8e5e98e53`](https://github.com/michaelfdias/maratona-marvel/commit/8e5e98e53b7990ab97b21a061faf0d4456c2ac5f) | Persiste seções abertas, amplia clique do cabeçalho e alinha barra de progresso |
+| 79 | [`95102687d`](https://github.com/michaelfdias/maratona-marvel/commit/95102687d68669fc508b226298bca087c3837fd3) | Evita hover persistente nos links do rodapé e aproxima seta do WhatsApp |
+| 80 | [`3a2888247`](https://github.com/michaelfdias/maratona-marvel/commit/3a2888247398f739ebe6a184d7b885ce7ff7b803) | Remove hover antigo do rodapé e atualiza estilos anti-toque |
+| 81 | [`086cce96e`](https://github.com/michaelfdias/maratona-marvel/commit/086cce96ecc13dd96147b9462bd73e6238908bda) | Remove hover antigo do rodapé e atualiza estilos anti-toque |
+| 82 | [`fa34c5252`](https://github.com/michaelfdias/maratona-marvel/commit/fa34c5252b563ab03e42d643a8445e363e76910a) | Remove hover antigo do rodapé e atualiza estilos anti-toque |
+| 83 | [`88bc5d0c3`](https://github.com/michaelfdias/maratona-marvel/commit/88bc5d0c342ea269320d5a15ea5bc27d33ef127f) | Remove hover antigo do rodapé e atualiza estilos anti-toque |
+| 84 | [`dbe6ba365`](https://github.com/michaelfdias/maratona-marvel/commit/dbe6ba365d796651e5a829de8a0c2ae30384b61c) | Documenta visão geral e funcionamento da Maratona Marvel no README |
+| 85 | [`ca1875e18`](https://github.com/michaelfdias/maratona-marvel/commit/ca1875e18f8f1dc3a791d2fd2954d23c49283303) | Inicia especificação viva com produto, arquitetura, catálogo e 70 sinopses |
+| 86 | [`08344a74d`](https://github.com/michaelfdias/maratona-marvel/commit/08344a74d6081e056d83c163b5bb1757bf53ca92) | Especifica UX, seções, progresso, filtros, preferências, storage e backups |
+| 87 | [`f1c211829`](https://github.com/michaelfdias/maratona-marvel/commit/f1c211829d5cdd81daf40a962e57f09ec0721e04) | Documenta celebrações, identidade visual, rodapé, privacidade e decisões de produto |
+
+### 21.1 Como interpretar o histórico
+
+- Commits mostram tentativas sucessivas e correções reais, mas a **versão atual** prevalece sobre decisões intermediárias.
+- O histórico contém **experimentos deliberadamente revertidos**, sobretudo Stories/QR Code e estilos antigos de rodapé.
+- Foram criados commits separados por arquivo para atualizar as quatro páginas em várias fases. Mensagens iguais em commits diferentes não implicam quatro decisões diferentes; representam distribuição transversal da mesma mudança.
+- Uma IA que precise explicar origem de comportamento deve localizar o commit por mensagem, examinar o diff e comparar com `main` atual.
+
+---
+
+## 22. Limitações e oportunidades futuras — não implementar por conta própria
+
+Estas possibilidades **não são requisitos aprovados**:
+
+- Página customizada para compartilhar Stories com estética premium, link clicável e experiência tecnicamente verificável.
+- Sincronização multi-dispositivo com login, passkeys, nuvem ou link de progresso privado.
+- Ampliar acervo para séries e especiais (alteraria escopo e percentuais).
+- PWA/offline/cache estruturado e novas estratégias de versionamento.
+- API de disponibilidade em plataformas de streaming.
+- Importador/exportador com migração robusta entre várias versões; importação completa do modo minimalista (`minimal`).
+- Testes E2E automatizados e pipeline CI visual por browser real.
+- Imagens Open Graph específicas por página.
+- Melhorias em performance de renderização incremental para catálogos muito maiores que 70 itens.
+- Revisão periódica de previsão de filmes futuros e conteúdos do catálogo.
+
+**Priorize correção de regressões, integridade editorial e estabilidade em mobile** acima de acrescentar recursos por conta própria.
+
+---
+
+## 23. Checklist editorial rápido antes de um release
+
+- [ ] Dataset estável: 70 IDs, 12 seções, 70 sinopses, 40/12/18 grupos (ou números intencionalmente atualizados).
+- [ ] Ordem recomendada e metodologia permanecem coerentes.
+- [ ] Filtros, busca, anos, notas, avaliações e datas funcionam.
+- [ ] Contadores, barras de progresso e celebrações usam critérios corretos.
+- [ ] Expansão de seção persistida; contador e linha inteira acionáveis; checkbox independente.
+- [ ] Tema claro/escuro compartilhado por todas as páginas, independente do OS.
+- [ ] Modal e drawer acessíveis; estilo de foco do Safari correto.
+- [ ] Modo minimalista funcional; sticky e voltar ao topo sem conflito.
+- [ ] Backup export/import e reset validados.
+- [ ] Rodapé full width sem caixas no WhatsApp/dedicatória; um coração; Papai inline; links Instagram preservados.
+- [ ] WhatsApp com texto público e URL, sem menu, Stories, QR Code ou dados pessoais.
+- [ ] Sobre, Ordem recomendada e Privacidade atualizadas.
+- [ ] `README.md` e `docs/ESPECIFICACAO.md` revisados.
+- [ ] Testes de JS/CSS, smoke Safari mobile e desktop realmente executados ou limitações declaradas.
+
+**Fim da especificação viva — a manutenção deste arquivo é parte da evolução do produto.**
