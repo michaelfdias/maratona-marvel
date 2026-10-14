@@ -471,7 +471,10 @@ let oldPrefs={};try{oldPrefs=JSON.parse(localStorage.getItem(PREFKEY)||'{}')||{}
 const prefs={theme:'light',language:'pt',chronological:false,notes:oldPrefs.notes!==false,ratings:false,years:true,dates:false,stickyProgress:true,backToTop:true,minimal:false,...oldPrefs};
 prefs.theme=['light','dark','oled'].includes(oldPrefs.theme)?oldPrefs.theme:(oldPrefs.dark===true?'dark':'light');
 delete prefs.dark; // Preferência legada migrada; futuros exports só precisam de theme.
-let filter='all',query='';
+// Guarda a escolha de filmes e o texto da busca juntamente com as demais preferências.
+prefs.filter=['all','mcu','recommended'].includes(oldPrefs.filter)?oldPrefs.filter:'all';
+prefs.searchQuery=typeof oldPrefs.searchQuery==='string'?oldPrefs.searchQuery:'';
+let filter=prefs.filter,query=prefs.searchQuery.trim().toLocaleLowerCase('pt-BR');
 const collapsedSections=new Set(Array.isArray(oldPrefs.collapsedSections)
   ? oldPrefs.collapsedSections.filter(name=>typeof name==='string')
   : []);
@@ -826,8 +829,42 @@ document.getElementById('list').addEventListener('change',e=>{
 });
 
 document.getElementById('list').addEventListener('click',e=>{const synopsis=e.target.closest('[data-synopsis]');if(synopsis){const id=synopsis.dataset.synopsis;const opened=expandedSynopses.has(id);if(opened)expandedSynopses.delete(id);else expandedSynopses.add(id);synopsis.setAttribute('aria-expanded',String(!opened));const panel=document.getElementById('synopsis-'+id);if(panel)panel.classList.toggle('expanded',!opened);return}const head=e.target.closest('.sagahead');const toggle=e.target.closest('[data-toggle-section]')||(head&&!e.target.closest('.section-check')?head.querySelector('.section-heading-trigger'):null);if(toggle){const name=toggle.dataset.toggleSection;const isCollapsed=collapsedSections.has(name);if(isCollapsed)collapsedSections.delete(name);else collapsedSections.add(name);const saga=toggle.closest('.saga');saga.classList.toggle('collapsed',!isCollapsed);saga.querySelectorAll('[data-toggle-section]').forEach(control=>{control.setAttribute('aria-expanded',String(isCollapsed));control.setAttribute('aria-label',(isCollapsed?'Ocultar':'Exibir')+' filmes da seção '+name)});saveCollapsedSections();syncSectionAllToggle();return}const t=e.target.closest('.rating button[data-value]');if(!t||e.detail!==0)return;commitRating(t.dataset.rating,Number(t.dataset.value));restoreRatingFocus(t.dataset.rating,Number(t.dataset.value))});
-document.querySelectorAll('[data-filter]').forEach(b=>b.addEventListener('click',()=>{filter=b.dataset.filter;document.querySelectorAll('[data-filter]').forEach(x=>{x.classList.toggle('active',x===b);x.setAttribute('aria-pressed',String(x===b))});render()}));
-function updateSearchClear(){document.getElementById('search-clear').hidden=!document.getElementById('search').value}document.getElementById('search').addEventListener('input',e=>{query=e.target.value.trim().toLocaleLowerCase('pt-BR');updateSearchClear();render()});document.getElementById('search-clear').addEventListener('click',()=>{const input=document.getElementById('search');input.value='';query='';updateSearchClear();render();input.focus()});
+function updateSearchClear(){
+  document.getElementById('search-clear').hidden=!document.getElementById('search').value;
+}
+function applyBrowsePrefs(){
+  // Restaura domínio e interface antes de renderizar, também após backup e reset.
+  filter=prefs.filter;
+  document.querySelectorAll('[data-filter]').forEach(b=>{
+    const active=b.dataset.filter===filter;
+    b.classList.toggle('active',active);
+    b.setAttribute('aria-pressed',String(active));
+  });
+  const input=document.getElementById('search');
+  input.value=prefs.searchQuery;
+  query=prefs.searchQuery.trim().toLocaleLowerCase('pt-BR');
+  updateSearchClear();
+}
+document.querySelectorAll('[data-filter]').forEach(b=>b.addEventListener('click',()=>{
+  prefs.filter=b.dataset.filter;
+  savePrefs();
+  applyBrowsePrefs();
+  render();
+}));
+document.getElementById('search').addEventListener('input',e=>{
+  prefs.searchQuery=e.target.value;
+  query=prefs.searchQuery.trim().toLocaleLowerCase('pt-BR');
+  savePrefs();
+  updateSearchClear();
+  render();
+});
+document.getElementById('search-clear').addEventListener('click',()=>{
+  prefs.searchQuery='';
+  savePrefs();
+  applyBrowsePrefs();
+  render();
+  document.getElementById('search').focus();
+});
 for(const id of ['theme','chronological','notes','ratings','years','dates','stickyProgress','backToTop','minimal','language'])document.getElementById(id).addEventListener('change',e=>{prefs[id]=(id==='language'||id==='theme')?e.target.value:e.target.checked;savePrefs();applyPrefs();render()});
 const dialog=document.getElementById('settings');document.getElementById('open-settings').addEventListener('click',()=>{dialog.showModal();window.dispatchEvent(new Event('scroll'));document.getElementById('settings-title').focus({preventScroll:true});updateStickyProgress()});document.getElementById('close-settings').addEventListener('click',()=>dialog.close());dialog.addEventListener('close',updateStickyProgress);
 document.getElementById('export').addEventListener('click',()=>{const blob=new Blob([JSON.stringify({version:2,exportedAt:new Date().toISOString(),progress,preferences:prefs},null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='maratona-marvel-progresso.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)});
@@ -835,6 +872,8 @@ document.getElementById('import').addEventListener('change',async e=>{const file
 if(['light','dark','oled'].includes(data.preferences.theme))prefs.theme=data.preferences.theme;
 else if(typeof data.preferences.dark==='boolean')prefs.theme=data.preferences.dark?'dark':'light';
 if(['pt','en'].includes(data.preferences.language))prefs.language=data.preferences.language;
+if(['all','mcu','recommended'].includes(data.preferences.filter))prefs.filter=data.preferences.filter;
+if(typeof data.preferences.searchQuery==='string')prefs.searchQuery=data.preferences.searchQuery;
 if(Array.isArray(data.preferences.collapsedSections)){
   collapsedSections.clear();
   for(const name of data.preferences.collapsedSections){
@@ -842,7 +881,7 @@ if(Array.isArray(data.preferences.collapsedSections)){
   }
   prefs.collapsedSections=[...collapsedSections];
 }
-savePrefs();applyPrefs()}render()}}catch(err){alert('Arquivo inválido. Selecione um backup da Maratona Marvel.')}e.target.value=''});
+savePrefs();applyPrefs();applyBrowsePrefs()}render()}}catch(err){alert('Arquivo inválido. Selecione um backup da Maratona Marvel.')}e.target.value=''});
 
 // Avaliação por toque, arraste ou clique, com prévia até soltar.
 const listEl=document.getElementById('list');
@@ -938,14 +977,14 @@ listEl.addEventListener('keydown',e=>{
   commitRating(star.dataset.rating,0);
   restoreRatingFocus(star.dataset.rating,Number(star.dataset.value));
 });
-const defaults={theme:'light',language:'pt',chronological:false,notes:true,ratings:false,years:true,dates:false,stickyProgress:true,backToTop:true,minimal:false,collapsedSections:[]};
+const defaults={theme:'light',language:'pt',chronological:false,notes:true,ratings:false,years:true,dates:false,stickyProgress:true,backToTop:true,minimal:false,collapsedSections:[],filter:'all',searchQuery:''};
 
-document.getElementById('reset-all').addEventListener('click',()=>{if(!confirm('Apagar todos os dados desta maratona? Você perderá filmes marcados, datas, avaliações e preferências deste navegador. Essa ação não pode ser desfeita sem um backup.'))return;progress={};collapsedSections.clear();Object.assign(prefs,defaults);filter='all';query='';document.getElementById('search').value='';document.querySelectorAll('[data-filter]').forEach(b=>{let active=b.dataset.filter==='all';b.classList.toggle('active',active);b.setAttribute('aria-pressed',String(active))});save();savePrefs();applyPrefs();render();dialog.close()});
+document.getElementById('reset-all').addEventListener('click',()=>{if(!confirm('Apagar todos os dados desta maratona? Você perderá filmes marcados, datas, avaliações e preferências deste navegador. Essa ação não pode ser desfeita sem um backup.'))return;progress={};collapsedSections.clear();Object.assign(prefs,defaults);save();savePrefs();applyPrefs();applyBrowsePrefs();render();dialog.close()});
 // Distingue teclado de toque/mouse para não deixar halos de foco nos checkboxes circulares.
 document.addEventListener('pointerdown',()=>document.documentElement.classList.remove('keyboard-navigation'),true);
 document.addEventListener('keydown',e=>{
   if(['Tab','Enter',' ','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key))
     document.documentElement.classList.add('keyboard-navigation');
 },true);
-applyPrefs();render();
+applyPrefs();applyBrowsePrefs();render();
 </script><script defer src="/maratona-marvel/back-to-top.js"></script></body></html>
