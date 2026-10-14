@@ -1,19 +1,21 @@
 <!doctype html><html lang="pt-BR" data-theme="light"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#fafaf9"><script>
-/* Fonte única do tema: preferência explícita da home, nunca a aparência do iPhone. */
+/* Aparência compartilhada, inclusive em páginas restauradas pelo Safari.
+   theme prevalece; dark é legado apenas para migração de dados antigos. */
 (()=>{
   const key='marvel-display-v1';
+  const allowed=['light','dark','oled'];
   function syncTheme(){
-    let dark=false;
+    let theme='light';
     try{
       const stored=JSON.parse(localStorage.getItem(key)||'{}');
-      dark=stored&&stored.dark===true;
+      if(allowed.includes(stored?.theme))theme=stored.theme;
+      else if(stored?.dark===true)theme='dark';
     }catch(error){}
-    document.documentElement.dataset.theme=dark?'dark':'light';
+    document.documentElement.dataset.theme=theme;
     const meta=document.querySelector('meta[name="theme-color"]');
-    if(meta)meta.content=dark?'#141615':'#fafaf9';
+    if(meta)meta.content=theme==='oled'?'#000000':theme==='dark'?'#141615':'#fafaf9';
   }
   syncTheme();
-  // Safari pode restaurar páginas antigas pelo histórico sem reexecutar scripts.
   window.addEventListener('pageshow',syncTheme);
   window.addEventListener('storage',event=>{
     if(event.key===key||event.key===null)syncTheme();
@@ -31,7 +33,7 @@ html[data-theme="light"]{
   --brand:#a32034;--brand-dark:#8a1b2c;--hero-bg:#D11F28;
   --hero-fg:#fff;--hero-sub:rgba(255,255,255,.9);--red:#D11F28
 }
-</style><link rel="stylesheet" href="/maratona-marvel/shared-footer.css?v=nav-touch-fix-20261014"><script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token":"1a49458c22b84f23902cab09c972c71c"}'></script></head><body><div class="wrap"><a class="back" href="https://michaelfdias.github.io/maratona-marvel/?v=themefix-20261014" aria-label="Voltar à lista de filmes">← Voltar à maratona</a><header class="hero"><p class="kicker">Maratona Marvel</p><h1>Como escolhemos a ordem dos filmes</h1><p>Por que usamos a ordem de lançamento como base e quando faz mais sentido assistir a determinadas franquias em blocos próprios.</p></header><main>
+</style><link rel="stylesheet" href="/maratona-marvel/shared-footer.css?v=nav-touch-fix-20261014"><link rel="stylesheet" href="/maratona-marvel/oled-theme.css?v=oled-20261014"><script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token":"1a49458c22b84f23902cab09c972c71c"}'></script></head><body><div class="wrap"><a class="back" href="https://michaelfdias.github.io/maratona-marvel/?v=themefix-20261014" aria-label="Voltar à lista de filmes">← Voltar à maratona</a><header class="hero"><p class="kicker">Maratona Marvel</p><h1>Como escolhemos a ordem dos filmes</h1><p>Por que usamos a ordem de lançamento como base e quando faz mais sentido assistir a determinadas franquias em blocos próprios.</p></header><main>
 <section><h2>O princípio: acompanhar como o universo foi apresentado</h2><p>A ordem principal segue os lançamentos dos filmes do MCU, começando por <em>Homem de Ferro</em> (2008). Essa escolha permite observar como personagens, relações e conflitos foram apresentados ao público, preservando descobertas, participações especiais e acontecimentos que foram planejados para ganhar significado ao longo dos anos.</p><p>Não adotamos a ordem cronológica dos acontecimentos fictícios como padrão. Um filme ambientado no passado pode ter sido produzido para ser visto depois de outros — e até conter cenas pós-créditos relacionadas a eventos posteriores.</p></section>
 <section><h2>Por que a lista não segue rigorosamente todas as datas?</h2><p>Além do MCU, filmes de outros estúdios passaram a dialogar com a Saga do Multiverso. Misturá-los indistintamente pelo ano criaria interrupções frequentes e confundiria continuidades que foram desenvolvidas separadamente. Por isso, adotamos uma <strong>ordem híbrida</strong>: respeitamos os lançamentos do MCU e reunimos algumas franquias complementares em maratonas próprias, colocadas antes dos filmes em que seu conhecimento se torna especialmente útil.</p></section>
 <section><h2>Como os blocos foram escolhidos</h2>
