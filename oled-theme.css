@@ -1,0 +1,62 @@
+/* Maratona Marvel — tema OLED / preto absoluto.
+   A seleção é explícita (data-theme="oled"), nunca baseada no dispositivo. */
+html[data-theme="oled"]{
+  color-scheme:dark;
+  --bg:#000000;
+  --fg:#eaeaea;
+  --muted:#aaaaaa;
+  --line:#303030;
+  --surface:#080808;
+  --soft:#111111;
+  --accent:#ededed;
+  --brand:#cf4356;
+  --brand-dark:#a42b3e;
+  --hero-bg:#86263a;
+  --hero-fg:#ffffff;
+  --hero-sub:rgba(255,255,255,.87);
+  --red:#86263a;
+  --mobile-star:#69736b;
+}
+/* Reproduzir os detalhes intencionais do escuro sem duplicar o fundo grafite. */
+html[data-theme="oled"] .header{
+  border-color:var(--hero-bg);
+  background:var(--hero-bg);
+  box-shadow:0 10px 28px rgba(0,0,0,.17)
+}
+html[data-theme="oled"] .header .iconbtn{
+  background:rgba(255,255,255,.10)
+}
+html[data-theme="oled"] .hero p{
+  color:#f5dcdf
+}
+html[data-theme="oled"] .filter.active{
+  background:var(--hero-bg);
+  color:#fff
+}
+html[data-theme="oled"] .check:checked,
+html[data-theme="oled"] .modal .setting input[type="checkbox"]:checked{
+  background-color:#777f79;
+  border-color:#777f79
+}
+html[data-theme="oled"] .section-check:checked{
+  background-color:#368e6a;
+  border-color:#368e6a
+}
+html[data-theme="oled"] .section-check:indeterminate{
+  background-color:#e3b952;
+  border-color:#e3b952
+}
+html[data-theme="oled"] .dedication a:hover,
+html[data-theme="oled"] .dedication a:focus-visible{
+  color:#f08b9d
+}
+html[data-theme="oled"] a{
+  text-decoration-color:#e08a98
+}
+/* Superfícies pretas diferenciadas por bordas discretas, não por caixas brilhantes. */
+html[data-theme="oled"] .modal{
+  background:var(--surface)
+}
+html[data-theme="oled"] .mini-drawer{
+  background:var(--surface)
+}
