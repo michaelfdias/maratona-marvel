@@ -793,6 +793,7 @@ A lista combina:
 - Avaliação por estrelas se ativa.
 - Campo HTML `input[type=date]` se a opção estiver ativa.
 - Layout adaptativo de linhas e colunas, sem quebra de nome truncando informação relevante.
+- **No desktop (largura a partir de 701px), o checkbox circular fica ancorado ao início da linha do filme, junto ao título**, com `.movie > .check { align-self: start; margin-top: 3px }`. O contêiner do filme usa Grid e sua altura muda quando a sinopse expande; deixar o checkbox centralizado verticalmente na linha faz o círculo **deslizar** durante a animação, comportamento visual rejeitado. Alinhar o item individualmente, **sem impedir o crescimento ou a animação da sinopse**. No mobile, manter a regra já existente de posicionamento em `grid-row:1`, alinhada ao título.
 
 ### 6.2 Marcar/desmarcar como assistido
 
@@ -1505,6 +1506,16 @@ Introdução do botão flutuante **Voltar ao topo** no canto inferior direito. R
 
 `README.md` para visão rápida e esta `docs/ESPECIFICACAO.md` como **documentação viva replicável por agentes**. Preserva decisões descartadas, não apenas estado atual, para que outras implementações não repitam caminhos rejeitados.
 
+### Etapa O — Checkbox estável durante expansão da sinopse no desktop
+
+O usuário percebeu que o checkbox circular de cada filme se **movimentava verticalmente** quando a sinopse era expandida ou recolhida na versão desktop.
+
+**Diagnóstico:** a linha do filme usava `CSS Grid` com `align-items:center`, e o item de checkbox acompanhava o crescimento da célula de conteúdo, produzindo uma recentralização visível durante a animação da sinopse.
+
+**Decisão:** fixar o checkbox ao início da linha com `align-self:start` e `margin-top:3px`, especificamente para telas de largura `min-width:701px`. Esse alinhamento é individual, não altera o layout da linha como um todo, não interfere na animação da sinopse e preserva o layout mobile que já mantinha o checkbox na primeira linha.
+
+**Motivação:** eliminar movimento decorativo inesperado em controles de marcação; uma sinopse deve expandir apenas o conteúdo textual, mantendo os elementos de ação visualmente estáveis.
+
 ### Etapa N — Otimização de espaço no topo minimalista
 
 A captura do usuário no Safari/iPhone mostrava o hambúrguer sozinho no canto esquerdo e o controle **“Recolher seções”** abaixo, consumindo uma faixa extra antes da primeira seção.
@@ -1618,6 +1629,9 @@ Os itens seguintes são **casos a testar**, não afirmações de que já tenham 
 | FIL-13 | Cancelar pointer | Não salvar valor parcial indesejado. |
 | FIL-14 | Pressionar Delete na estrela focada | Limpa avaliação. |
 | FIL-15 | Rolagem vertical por cima das estrelas | Página continua rolando normalmente. |
+| FIL-16 | No desktop, expandir e recolher sinopse de um filme | Checkbox permanece alinhado ao título, sem deslocamento vertical durante a animação. |
+| FIL-17 | Conferir checkbox no celular, com sinopse aberta/fechada | Continua na primeira linha do grid, sem regressão no layout mobile. |
+| FIL-18 | Alternar filmes sem sinopse, com notas e com ratings/datas no desktop | Checkbox mantém posição estável junto ao título, sem centralização ao longo da altura variável do item. |
 
 ### 19.5 Configurações, tema e persistência
 
@@ -1947,6 +1961,7 @@ Estas possibilidades **não são requisitos aprovados**:
 - [ ] Filtros e busca funcionam **e sobrevivem ao reload**; texto bruto, opção ativa e botão limpar estão sincronizados; anos, notas, avaliações e datas também funcionam.
 - [ ] Contadores, barras de progresso e celebrações usam critérios corretos.
 - [ ] Expansão de seção persistida; contador e linha inteira acionáveis; checkbox independente.
+- [ ] Checkbox de **filme** no desktop estável junto ao título ao abrir/fechar sinopses; animação do texto e alinhamento mobile preservados.
 - [ ] Aparência Claro/Escuro/OLED compartilhada nas quatro páginas, independente do OS; preferências e backups antigos migrados sem perda.
 - [ ] Modal e drawer acessíveis; estilo de foco do Safari correto.
 - [ ] Modo minimalista funcional; hambúrguer e controle de recolher/expandir alinhados na mesma faixa inicial sem sobreposição; sticky e voltar ao topo sem conflito.
