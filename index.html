@@ -371,7 +371,8 @@ html[data-theme=dark] .dedication a:hover,html[data-theme=dark] .dedication a:fo
   padding:0;border:1.5px solid var(--muted);border-radius:50%;
   background-color:var(--surface);background-image:none;
   background-repeat:no-repeat;background-position:50% 50%;background-size:16px 16px;
-  cursor:pointer;transition:background-color .15s ease,border-color .15s ease;
+  cursor:pointer;-webkit-tap-highlight-color:transparent;
+  transition:background-color .15s ease,border-color .15s ease;
 }
 /* Filmes: tanto no claro quanto no escuro, a marcação fica em cinza neutro. */
 .check:checked,.modal .setting input[type="checkbox"]:checked{background-color:#737a75;border-color:#737a75;background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23ffffff%22%20stroke-width%3D%223.1%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M5.5%2012.5%20L9.7%2016.7%20L18.5%208%22%2F%3E%3C%2Fsvg%3E")}
@@ -385,11 +386,16 @@ html[data-theme=dark] .section-check:indeterminate{background-color:#e3b952;bord
 .check::after,.section-check::after,.check:checked::after,.section-check:checked::after,.modal .setting input[type="checkbox"]::after{
   content:none!important;display:none!important;
 }
-.check:hover,.section-check:hover,.modal .setting input[type="checkbox"]:hover{border-color:var(--fg)}
-.section-check:checked:hover{border-color:#267653}
-.section-check:indeterminate:hover{border-color:#bd8a28}
+/* :hover permanece ativo após o toque no Safari; use-o somente com mouse real. */
+@media(hover:hover) and (pointer:fine){
+  .check:hover,.section-check:hover,.modal .setting input[type="checkbox"]:hover{border-color:var(--fg)}
+  .section-check:checked:hover{border-color:#267653}
+  .section-check:indeterminate:hover{border-color:#bd8a28}
+}
 /* Evita o contorno persistente após toque/clique; exibe foco somente via teclado. */
-.check:focus-visible,.section-check:focus-visible,.modal .setting input[type="checkbox"]:focus-visible{outline:none;outline-offset:0}
+.check:focus,.section-check:focus,.modal .setting input[type="checkbox"]:focus{
+  outline:none;outline-offset:0;box-shadow:none
+}
 html.keyboard-navigation .check:focus-visible,
 html.keyboard-navigation .section-check:focus-visible,
 html.keyboard-navigation .modal .setting input[type="checkbox"]:focus-visible{outline:2px solid #8cae9b;outline-offset:3px}
