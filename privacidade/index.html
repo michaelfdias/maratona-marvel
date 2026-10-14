@@ -1,19 +1,21 @@
 <!doctype html><html lang="pt-BR" data-theme="light"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#fafaf9"><script>
-/* Fonte única do tema: preferência explícita da home, nunca a aparência do iPhone. */
+/* Aparência compartilhada, inclusive em páginas restauradas pelo Safari.
+   theme prevalece; dark é legado apenas para migração de dados antigos. */
 (()=>{
   const key='marvel-display-v1';
+  const allowed=['light','dark','oled'];
   function syncTheme(){
-    let dark=false;
+    let theme='light';
     try{
       const stored=JSON.parse(localStorage.getItem(key)||'{}');
-      dark=stored&&stored.dark===true;
+      if(allowed.includes(stored?.theme))theme=stored.theme;
+      else if(stored?.dark===true)theme='dark';
     }catch(error){}
-    document.documentElement.dataset.theme=dark?'dark':'light';
+    document.documentElement.dataset.theme=theme;
     const meta=document.querySelector('meta[name="theme-color"]');
-    if(meta)meta.content=dark?'#141615':'#fafaf9';
+    if(meta)meta.content=theme==='oled'?'#000000':theme==='dark'?'#141615':'#fafaf9';
   }
   syncTheme();
-  // Safari pode restaurar páginas antigas pelo histórico sem reexecutar scripts.
   window.addEventListener('pageshow',syncTheme);
   window.addEventListener('storage',event=>{
     if(event.key===key||event.key===null)syncTheme();
@@ -31,7 +33,7 @@ html[data-theme="light"]{
   --brand:#a32034;--brand-dark:#8a1b2c;--hero-bg:#D11F28;
   --hero-fg:#fff;--hero-sub:rgba(255,255,255,.9);--red:#D11F28
 }
-</style><link rel="stylesheet" href="/maratona-marvel/shared-footer.css?v=nav-touch-fix-20261014"><script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token":"1a49458c22b84f23902cab09c972c71c"}'></script></head><body><div class="wrap"><a class="back" href="https://michaelfdias.github.io/maratona-marvel/?v=themefix-20261014" aria-label="Voltar à lista de filmes">← Voltar à maratona</a><header class="hero"><p class="kicker">Maratona Marvel</p><h1>Política de Privacidade</h1><p>Entenda quais informações ficam no seu dispositivo, quais serviços externos participam do funcionamento do site e como entrar em contato.</p></header><main>
+</style><link rel="stylesheet" href="/maratona-marvel/shared-footer.css?v=nav-touch-fix-20261014"><link rel="stylesheet" href="/maratona-marvel/oled-theme.css?v=oled-20261014"><script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token":"1a49458c22b84f23902cab09c972c71c"}'></script></head><body><div class="wrap"><a class="back" href="https://michaelfdias.github.io/maratona-marvel/?v=themefix-20261014" aria-label="Voltar à lista de filmes">← Voltar à maratona</a><header class="hero"><p class="kicker">Maratona Marvel</p><h1>Política de Privacidade</h1><p>Entenda quais informações ficam no seu dispositivo, quais serviços externos participam do funcionamento do site e como entrar em contato.</p></header><main>
 <p class="muted"><small>Última atualização: 13 de outubro de 2026</small></p>
 <section><h2>1. Sobre esta política</h2><p>Esta Política de Privacidade descreve o funcionamento da Maratona Marvel, disponível em <a href="https://michaelfdias.github.io/maratona-marvel/?v=themefix-20261014">https://michaelfdias.github.io/maratona-marvel/</a>, um projeto independente hospedado no GitHub Pages. Para solicitações sobre privacidade, utilize <a href="mailto:atalhos.item_9s@icloud.com">atalhos.item_9s@icloud.com</a>.</p></section>
 <section><h2>2. Informações salvas no navegador</h2><p>Ao marcar filmes, registrar datas, atribuir avaliações ou alterar preferências, o site guarda essas informações no <strong>armazenamento local do navegador (localStorage)</strong>. Esses registros não são enviados pelo site a um banco de dados próprio e não exigem conta ou identificação pessoal.</p><p>É possível exportar um arquivo JSON com os registros ou importar um backup. A função de redefinição apaga os dados da aplicação nesse navegador; limpar os dados do site nas configurações do navegador também pode removê-los. Os dados não são sincronizados entre aparelhos automaticamente.</p></section>
