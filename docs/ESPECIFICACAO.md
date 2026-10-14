@@ -885,6 +885,16 @@ A interface usa modal HTML `<dialog id="settings">`, com título focável, contr
 
 ### 8.1 Grupos de configurações
 
+**Comportamento do modal de configurações**
+
+- O elemento `<dialog id="settings" class="modal">` mantém **borda arredondada nos quatro cantos**, independentemente de a lista de preferências precisar de rolagem no desktop ou celular.
+- A rolagem vertical pertence ao conteúdo interno `.modal-inner`, enquanto o `<dialog>` utiliza `overflow:hidden`. O conteúdo é limitado pela altura disponível, com `overscroll-behavior:contain`, para evitar que a barra de rolagem externa corte os cantos.
+- A barra de rolagem é **estreita e discreta**, com pista transparente e polegar arredondado. A implementação combina `scrollbar-width:thin`/`scrollbar-color` e pseudo-elementos `::-webkit-scrollbar` com recuo vertical, mantendo a cor vinculada ao tema.
+- Clicar ou tocar **fora da superfície do diálogo** fecha as configurações, tanto em desktop quanto em mobile. A área externa é determinada pelas coordenadas de clique em relação a `getBoundingClientRect()`; o clique só pode encerrar o modal quando `event.target===dialog` **e** as coordenadas estão fora dos limites.
+- Interagir com checkboxes, selects, textos, botões ou a própria barra de rolagem **não** deve fechar a janela.
+- O botão **X** e a tecla **Escape** continuam funcionando e a rotina de fechamento atualiza o progresso fixo corretamente.
+- Em iPhone, o modal respeita `100dvh` e as margens laterais; a rolagem deve acontecer dentro da janela e não deformar o raio externo.
+
 **Visualização**
 - `minimal`: **false** por padrão — modo minimalista máximo.
 - `theme`: **"light"** — seletor Aparência com Claro, Escuro e OLED. O antigo booleano `dark` é aceito para migração.
@@ -1506,6 +1516,14 @@ Introdução do botão flutuante **Voltar ao topo** no canto inferior direito. R
 
 `README.md` para visão rápida e esta `docs/ESPECIFICACAO.md` como **documentação viva replicável por agentes**. Preserva decisões descartadas, não apenas estado atual, para que outras implementações não repitam caminhos rejeitados.
 
+### Etapa P — Barra de rolagem arredondada e fechamento externo do modal
+
+Uma captura no desktop mostrou o modal de configurações com os **cantos esquerdos arredondados**, mas a **barra de rolagem nativa no lado direito formando uma borda visual reta**. O usuário também solicitou fechar as configurações tocando/clicando fora da caixa.
+
+**Decisão:** manter o `<dialog>` com `overflow:hidden` e borda arredondada; transferir a rolagem para `.modal-inner`, limitar a altura interna e customizar a scrollbar com trilho transparente, thumb estreito/arredondado e recuo dos cantos. Um listener no próprio `<dialog>` fecha somente quando o alvo do clique é o diálogo (backdrop) e as coordenadas estão fora do retângulo visível da janela.
+
+**Motivação:** acabamento visual consistente nos cantos dos três temas e comportamento de modal intuitivo em desktop/iPhone, sem fechar ao utilizar controles ou rolar o conteúdo interno.
+
 ### Etapa O — Checkbox estável durante expansão da sinopse no desktop
 
 O usuário percebeu que o checkbox circular de cada filme se **movimentava verticalmente** quando a sinopse era expandida ou recolhida na versão desktop.
@@ -1643,6 +1661,11 @@ Os itens seguintes são **casos a testar**, não afirmações de que já tenham 
 | CFG-04 | Navegar para uma página interna e voltar (Safari) | Tema sincronizado após `pageshow`. |
 | CFG-05 | Abrir modal de configurações | Título e controles acessíveis, sem destaque visual touch preso. |
 | CFG-06 | Fechar com Escape | Modal fecha e layout volta ao normal. |
+| CFG-27 | Configurações longas no desktop, exigir scroll | Os quatro cantos permanecem arredondados; scrollbar fina e arredondada fica no conteúdo interno. |
+| CFG-28 | Rolar configurações no iPhone | Rolagem interna funciona, modal respeita viewport e não perde borda arredondada. |
+| CFG-29 | Clicar/tocar fora do modal em desktop/mobile | Fecha a janela, atualiza progresso fixo e mantém escolhas já feitas. |
+| CFG-30 | Clicar em campo/label/checkbox/select ou arrastar scrollbar | Modal **permanece aberto**; nenhuma interação interna é interpretada como clique fora. |
+| CFG-31 | Usar botão X e Escape | Ambos permanecem funcionais após introdução do fechamento pelo backdrop. |
 | CFG-07 | Ativar modo minimalista | Lista compacta, header/progresso/filtros no drawer. |
 | CFG-08 | Abrir/fechar drawer | Backdrop, foco, Escape e scroll restaurados. |
 | CFG-09 | Desligar modo minimalista | Controles retornam ao fluxo original sem duplicação. |
@@ -1963,7 +1986,7 @@ Estas possibilidades **não são requisitos aprovados**:
 - [ ] Expansão de seção persistida; contador e linha inteira acionáveis; checkbox independente.
 - [ ] Checkbox de **filme** no desktop estável junto ao título ao abrir/fechar sinopses; animação do texto e alinhamento mobile preservados.
 - [ ] Aparência Claro/Escuro/OLED compartilhada nas quatro páginas, independente do OS; preferências e backups antigos migrados sem perda.
-- [ ] Modal e drawer acessíveis; estilo de foco do Safari correto.
+- [ ] Modal e drawer acessíveis; modal com cantos arredondados mesmo com scrollbar, rolagem interna e fechamento por clique/tap fora, além de X/Escape; estilo de foco Safari correto.
 - [ ] Modo minimalista funcional; hambúrguer e controle de recolher/expandir alinhados na mesma faixa inicial sem sobreposição; sticky e voltar ao topo sem conflito.
 - [ ] Backup export/import e reset validados.
 - [ ] Rodapé full width sem caixas no WhatsApp/dedicatória; um coração; Papai inline; links Instagram preservados.
