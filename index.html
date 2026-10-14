@@ -364,7 +364,11 @@ html[data-theme=dark] .section-check:indeterminate{background-color:#e3b952;bord
 .check:hover,.section-check:hover,.modal .setting input[type="checkbox"]:hover{border-color:var(--fg)}
 .section-check:checked:hover{border-color:#267653}
 .section-check:indeterminate:hover{border-color:#bd8a28}
-.check:focus-visible,.section-check:focus-visible,.modal .setting input[type="checkbox"]:focus-visible{outline:2px solid #8cae9b;outline-offset:3px}
+/* Evita o contorno persistente após toque/clique; exibe foco somente via teclado. */
+.check:focus-visible,.section-check:focus-visible,.modal .setting input[type="checkbox"]:focus-visible{outline:none;outline-offset:0}
+html.keyboard-navigation .check:focus-visible,
+html.keyboard-navigation .section-check:focus-visible,
+html.keyboard-navigation .modal .setting input[type="checkbox"]:focus-visible{outline:2px solid #8cae9b;outline-offset:3px}
 /* Contador de largura constante, evitando quebra de linha ao marcar filmes. */
 .sagahead .count{flex:0 0 7ch;width:7ch;text-align:right;font-variant-numeric:tabular-nums}
 .sagahead .section-heading{flex:1 1 0%;min-width:0}
@@ -572,5 +576,11 @@ listEl.addEventListener('pointerout',e=>{const r=e.target.closest('.rating');if(
 const defaults={dark:false,language:'pt',chronological:false,notes:true,ratings:false,years:true,dates:false,stickyProgress:true,minimal:false};
 
 document.getElementById('reset-all').addEventListener('click',()=>{if(!confirm('Apagar todos os dados desta maratona? Você perderá filmes marcados, datas, avaliações e preferências deste navegador. Essa ação não pode ser desfeita sem um backup.'))return;progress={};Object.assign(prefs,defaults);filter='all';query='';document.getElementById('search').value='';document.querySelectorAll('[data-filter]').forEach(b=>{let active=b.dataset.filter==='all';b.classList.toggle('active',active);b.setAttribute('aria-pressed',String(active))});save();savePrefs();applyPrefs();render();dialog.close()});
+// Distingue teclado de toque/mouse para não deixar halos de foco nos checkboxes circulares.
+document.addEventListener('pointerdown',()=>document.documentElement.classList.remove('keyboard-navigation'),true);
+document.addEventListener('keydown',e=>{
+  if(['Tab','Enter',' ','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key))
+    document.documentElement.classList.add('keyboard-navigation');
+},true);
 applyPrefs();render();
 </script></body></html>
