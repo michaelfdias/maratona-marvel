@@ -928,6 +928,8 @@ Motivação: permitir acompanhar somente **filmes e anos** sem chrome visual exc
 - Capa, progresso e controles (filtros, busca, ações selecionadas) migram para **menu lateral** em vez de permanecerem no fluxo da lista.
 - O código original usa `miniTargets` com comentários-placeholder para mover elementos DOM ao `mini-drawer-content` sem destruí-los; ao desativar, devolve-os à posição.
 - Ícone hambúrguer aparece somente no modo minimalista, independente da largura do viewport; bug antigo de aparecer no modo normal foi corrigido.
+- **O botão “Recolher/Expandir seções” ocupa a mesma faixa horizontal do ícone hambúrguer**, alinhado à direita no topo, sem uma segunda linha. Na implementação atual o hambúrguer usa `position:fixed;top:14px;left:14px`, enquanto `.section-all-controls` é posicionado **absolutamente dentro de `main.wrap`** (`top:14px`, `right:25px` desktop, `16px` até 700px e `12px` até 380px). O controle mantém área de toque de pelo menos `43px` de altura, mas **rola naturalmente com a lista** para não ficar flutuando sobre filmes durante o scroll.
+- O alinhamento deve economizar espaço vertical antes da primeira seção. **Não criar outra linha, não fixar o controle global sobre os filmes e não alterar sua posição no modo normal.** Se a lista estiver vazia, o controle permanece escondido.
 - Drawer abre sobre backdrop, tem botão fechar, e fecha com toque fora ou `Escape`; foco se move para fechar quando abre e retorna ao acionador quando fecha.
 - Informações secundárias (notas, sinopses, ratings, datas etc.) ficam ocultas; anos ficam visíveis de forma compacta.
 - Barra sticky de progresso é ocultada nesse modo; o botão geral “Voltar ao topo” segue sua configuração própria.
@@ -1503,6 +1505,14 @@ Introdução do botão flutuante **Voltar ao topo** no canto inferior direito. R
 
 `README.md` para visão rápida e esta `docs/ESPECIFICACAO.md` como **documentação viva replicável por agentes**. Preserva decisões descartadas, não apenas estado atual, para que outras implementações não repitam caminhos rejeitados.
 
+### Etapa N — Otimização de espaço no topo minimalista
+
+A captura do usuário no Safari/iPhone mostrava o hambúrguer sozinho no canto esquerdo e o controle **“Recolher seções”** abaixo, consumindo uma faixa extra antes da primeira seção.
+
+**Decisão:** alinhar horizontalmente hambúrguer e controle global no topo do modo minimalista. O controle fica à direita com posicionamento **absoluto** dentro de `main.wrap` e não permanece fixo na viewport durante a rolagem. O ícone hambúrguer mantém o comportamento fixo e seu drawer. O CSS só altera o modo minimalista; a apresentação normal é preservada.
+
+**Motivação:** ganhar espaço útil na primeira dobra do iPhone sem criar outra barra fixa, alterar o comportamento da lista ou prejudicar as áreas de toque.
+
 ### Etapa M — Persistência do filtro e do termo de busca
 
 O usuário identificou uma inconsistência: as seções expandidas/recolhidas já sobreviviam a recarregamentos, mas o filtro (**Todos / MCU / MCU + recomendados**) e o texto de pesquisa voltavam aos valores iniciais.
@@ -1636,6 +1646,9 @@ Os itens seguintes são **casos a testar**, não afirmações de que já tenham 
 | CFG-21 | Exportar tema OLED e importar em outra sessão | preferences.theme="oled" é preservado e aplicado. |
 | CFG-22 | Usar Apagar tudo no OLED | Aparência retorna a Claro. |
 | CFG-23 | Conferir interação no OLED | Modal, checkbox, filtros, drawer, links e rodapé conservam contraste e foco acessível. |
+| CFG-24 | Abrir modo minimalista em iPhone | Hambúrguer à esquerda e Recolher/Expandir seções à direita, na mesma linha horizontal. |
+| CFG-25 | Rolar lista no modo minimalista | O controle de seções rola com o conteúdo; hambúrguer continua fixo e não há sobreposição de filmes. |
+| CFG-26 | Voltar ao modo normal ou filtrar até nenhum resultado | Layout normal do controle mantém posição original; controle fica oculto sem seções. |
 
 ### 19.6 Backup e privacidade
 
@@ -1936,7 +1949,7 @@ Estas possibilidades **não são requisitos aprovados**:
 - [ ] Expansão de seção persistida; contador e linha inteira acionáveis; checkbox independente.
 - [ ] Aparência Claro/Escuro/OLED compartilhada nas quatro páginas, independente do OS; preferências e backups antigos migrados sem perda.
 - [ ] Modal e drawer acessíveis; estilo de foco do Safari correto.
-- [ ] Modo minimalista funcional; sticky e voltar ao topo sem conflito.
+- [ ] Modo minimalista funcional; hambúrguer e controle de recolher/expandir alinhados na mesma faixa inicial sem sobreposição; sticky e voltar ao topo sem conflito.
 - [ ] Backup export/import e reset validados.
 - [ ] Rodapé full width sem caixas no WhatsApp/dedicatória; um coração; Papai inline; links Instagram preservados.
 - [ ] WhatsApp com texto público e URL, sem menu, Stories, QR Code ou dados pessoais.
