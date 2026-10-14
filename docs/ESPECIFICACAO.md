@@ -1,7 +1,7 @@
 # Especificação viva — Maratona Marvel
 
 > **Documento de produto, engenharia, UX e evolução histórica**  
-> **Versão documental:** 1.1 · **Referência:** implementação em `main` consultada em 14/10/2026 · **Idioma:** português brasileiro  
+> **Versão documental:** 1.2 · **Referência:** implementação em `main` consultada em 14/10/2026 · **Idioma:** português brasileiro  
 > **Repositório original:** https://github.com/michaelfdias/maratona-marvel  
 > **Aplicação:** https://michaelfdias.github.io/maratona-marvel/  
 > **Público-alvo secundário:** desenvolvedores e agentes de programação (por exemplo, Claude Code) que precisam **reconstruir uma experiência funcionalmente equivalente**, sem depender de contexto de conversa.
@@ -103,7 +103,7 @@ Mesmo que o produto original seja monolítico, uma IA pode separar as responsabi
 
 - **Catálogo editorial**: matriz estática de seções e filmes; índice por ID; dicionário de sinopses.
 - **Persistência**: um serviço `Storage` com leitura defensiva, escrita, schema/versão, exportação e importação.
-- **Estado de apresentação**: preferências (inclusive seletor triestado e migração do antigo `dark`), filtro ativo, busca, agrupamento, sessões expandidas e sinopses temporárias.
+- **Estado de apresentação**: preferências (inclusive seletor triestado, migração do antigo `dark`, filtro ativo e busca persistidos), agrupamento, sessões expandidas e sinopses temporárias.
 - **Progresso**: funções puras para calcular vistos, percentuais, conclusão por seção, datas e avaliações.
 - **Renderização**: componentes de capa, métricas, filtros, lista, linha de filme, seções, modal, rodapé e páginas institucionais.
 - **Interação**: click/pointer/touch/keyboard, foco, modais, menu lateral, scroll e animação.
@@ -704,11 +704,11 @@ Eddie Brock e Venom passam a ser perseguidos por forças humanas e alienígenas,
 
 ### 4.5 Filtros, busca e texto de ajuda
 
-- Os três filtros formam controle visual compacto em que apenas um está ativo; `aria-pressed` acompanha o estado.
+- Os três filtros formam controle visual compacto em que apenas um está ativo; `aria-pressed` acompanha o estado. **A escolha ativa é salva** em `marvel-display-v1.filter` e restaurada após atualização/navegação.
 - O filtro selecionado usa **vermelho coerente com a capa nos dois temas**, não azul default.
 - Campo de busca acompanha os filtros no desktop e se adapta em larguras reduzidas.
 - Busca consulta `pt`, `en` e `year` no conjunto de filmes, com `toLocaleLowerCase('pt-BR')` e comparação textual. A busca não depende do idioma que está sendo exibido.
-- A entrada traz placeholder/`aria-label` “Buscar filme” e um botão de limpar acessível, oculto quando não há texto.
+- A entrada traz placeholder/`aria-label` “Buscar filme” e um botão de limpar acessível, oculto quando não há texto. O texto **exatamente como digitado** é salvo em `marvel-display-v1.searchQuery`; para pesquisar, aplica-se `trim().toLocaleLowerCase('pt-BR')` somente à versão em memória. O botão de limpar salva a string vazia.
 - O texto contextual sob os filtros muda: todos → MCU + recomendados + opcionais; MCU → oficiais; recomendados → complementos sem extras.
 - Um segundo texto orienta a marcar filmes e tocar no título para pesquisar.
 - O título do filme **é um link para busca externa** no Google, aberto em nova aba com `rel="noopener noreferrer"`; não deve parecer botão de player.
@@ -872,6 +872,9 @@ Ordem original de `sections` e ordem interna de `items`, independentemente da da
 - Busca: contém consulta normalizada em título PT, EN ou representação de ano; aplica-se após restrição de grupo.
 - Mesmo que o filtro exiba 1 de 1 assistido e 100%, **não anunciar maratona inteira concluída** sem `all.every(watched)` nos 70.
 - O botão “Recolher todas” atua sobre seções resultantes, não sobre as 12 seções editoriais ausentes.
+- **Persistência de navegação:** filtro escolhido e termo de pesquisa são carregados do `localStorage` antes da primeira renderização. Depois, uma única rotina `applyBrowsePrefs()` sincroniza filtro ativo (`.active`/`aria-pressed`), valor do input, botão de limpar, busca normalizada e estado `filter`/`query`. Cada clique de filtro e cada `input` de busca salva preferências imediatamente. Valem também em modo minimalista, cujo menu lateral movimenta os controles reais, sem cloná-los.
+- Valores desconhecidos de filtro retornam a `all`; busca não-string retorna a string vazia. Primeira visita permanece sem busca e com Todos ativo.
+- O backup JSON inclui ambos em `preferences`; ao importar, restaurar e sincronizar a UI antes de renderizar. O reset global limpa a busca e volta ao filtro Todos; **limpar apenas o campo de busca preserva o filtro atual**.
 
 ---
 
@@ -984,6 +987,8 @@ O segundo exemplo é ilustrativo. O código real pode omitir propriedades ainda 
 ```json
 {
   "theme": "light",
+  "filter": "all",
+  "searchQuery": "",
   "language": "pt",
   "chronological": false,
   "notes": true,
@@ -997,7 +1002,7 @@ O segundo exemplo é ilustrativo. O código real pode omitir propriedades ainda 
 }
 ```
 
-O array `collapsedSections` só aparece após interação/salvamento na implementação atual. O campo `theme` aceita `light`, `dark` ou `oled`; o antigo booleano `dark` é lido apenas para migração/importação. **IDs de filmes e nomes de seções são chaves de persistência**: não renomear sem migração deliberada.
+O array `collapsedSections` só aparece após interação/salvamento na implementação atual. Os campos `filter` (`all`/`mcu`/`recommended`) e `searchQuery` (string bruta) preservam a navegação ao recarregar. O campo `theme` aceita `light`, `dark` ou `oled`; o antigo booleano `dark` é lido apenas para migração/importação. **IDs de filmes e nomes de seções são chaves de persistência**: não renomear sem migração deliberada.
 
 ### 10.4 Exportação
 
@@ -1024,7 +1029,7 @@ O array `collapsedSections` só aparece após interação/salvamento na implemen
 - **Solicita confirmação** antes de substituir o progresso atual.
 - Só aceita IDs presentes no catálogo; ignora registros externos.
 - Por filme normaliza: `watched` booleano, `date` string em `YYYY-MM-DD` ou vazio, `rating` inteiro entre 1 e 5 ou zero.
-- Importa preferências booleanas (ordem, notas, ratings, anos, datas, sticky, backToTop), `theme` entre `light`, `dark` e `oled`, com fallback para antigo `dark` booleano; idioma permitido e `collapsedSections` quando válido.
+- Importa preferências booleanas (ordem, notas, ratings, anos, datas, sticky, backToTop), `theme` entre `light`, `dark` e `oled`, com fallback para antigo `dark` booleano; idioma permitido, `filter` válido, `searchQuery` string e `collapsedSections` quando válido. Depois da confirmação e leitura de preferências, executa `applyBrowsePrefs()` antes de `render()`.
 - Salva, aplica preferências e renderiza.
 - Mensagem de erro simples para JSON inválido; limpa valor do `input` para permitir selecionar o mesmo arquivo novamente.
 
@@ -1381,6 +1386,7 @@ Explicar com clareza:
 | ADR-023 | Links dos filmes para busca pública | Player / link de streaming | Manter escopo legal e editorial. |
 | ADR-024 | Sinopses independentes e opt-in | Todos os textos abertos permanentemente | Densidade, legibilidade e spoilers. |
 | ADR-025 | Aparência em três temas (`light`, `dark`, `oled`) | Checkbox binário Escuro/Claro; detecção automática de OLED | Preto absoluto sem perder grafite, migração dos dados legados e consistência entre quatro rotas. |
+| ADR-026 | Persistir filtro ativo e busca bruta | Manter filtro e query somente em variáveis efêmeras | Preservar o contexto de exploração ao recarregar, inclusive no modo minimalista e nos backups. |
 
 **Como usar os ADRs:** ao mudar uma decisão, explicar o evento, a nova alternativa, as implicações e os testes. Não eliminar o registro antigo como se nunca tivesse sido tentado.
 
@@ -1497,6 +1503,14 @@ Introdução do botão flutuante **Voltar ao topo** no canto inferior direito. R
 
 `README.md` para visão rápida e esta `docs/ESPECIFICACAO.md` como **documentação viva replicável por agentes**. Preserva decisões descartadas, não apenas estado atual, para que outras implementações não repitam caminhos rejeitados.
 
+### Etapa M — Persistência do filtro e do termo de busca
+
+O usuário identificou uma inconsistência: as seções expandidas/recolhidas já sobreviviam a recarregamentos, mas o filtro (**Todos / MCU / MCU + recomendados**) e o texto de pesquisa voltavam aos valores iniciais.
+
+**Decisão:** persistir os dois campos junto de `marvel-display-v1`, validar filtro, manter a string de busca original, restaurar controles ativos antes de renderizar, atualizar imediatamente em cliques/digitação/limpeza, importar/exportar via preferências e restaurar `all` + busca vazia no reset. O modo minimalista mantém o mesmo estado, sem duplicar elementos de busca/filtro.
+
+**Motivação:** preservar a posição lógica de quem está acompanhando uma maratona e impedir que atualizar o navegador obrigue a repetir escolhas.
+
 ### Etapa L — Tema OLED como terceiro modo de aparência
 
 O usuário solicitou **preto absoluto** para telas OLED sem abandonar o tema escuro grafite. O checkbox binário foi substituído pelo seletor **Aparência** (Claro, Escuro, OLED), com `oled-theme.css` compartilhado pelas quatro páginas, fundo da página e do rodapé `#000000`, controles quase pretos e capa vermelha preservada.
@@ -1544,6 +1558,15 @@ Os itens seguintes são **casos a testar**, não afirmações de que já tenham 
 | PRO-10 | Concluir os 70 filmes | Comemoração final uma vez na transição. |
 | PRO-11 | Atualizar com 70 vistos | Sem disparar automaticamente nova comemoração. |
 | PRO-12 | Filtro com 0 resultados | Barra acessível válida e textos coerentes. |
+| PRO-13 | Escolher MCU, atualizar a home | MCU permanece selecionado visualmente e 40 títulos continuam filtrados. |
+| PRO-14 | Escolher MCU + recomendados, atualizar | Estado ativo e 52 títulos restaurados. |
+| PRO-15 | Pesquisar com maiúsculas, espaços e acentos; atualizar | Texto exibido permanece como digitado e comparação continua normalizada. |
+| PRO-16 | Salvar filtro+busca juntos e atualizar | Ambos são aplicados ao mesmo tempo, sem flash de todos os filmes. |
+| PRO-17 | Limpar texto com o botão × e atualizar | Busca permanece vazia, **filtro escolhido permanece**. |
+| PRO-18 | Navegar no modo minimalista e recarregar | Menu lateral contém os controles restaurados corretamente. |
+| PRO-19 | Tentar importar filtro desconhecido ou busca de tipo inválido | Dados inválidos não causam erro nem comportamento imprevisível. |
+| PRO-20 | Exportar e importar filtro e busca válidos | Ambas as preferências são restauradas, com foco no mesmo escopo. |
+| PRO-21 | Confirmar Apagar tudo com busca e filtro ativos | Retorna ao filtro Todos e busca vazia, inclusive após recarga. |
 
 ### 19.3 Seções e marcação coletiva
 
@@ -1908,7 +1931,7 @@ Estas possibilidades **não são requisitos aprovados**:
 
 - [ ] Dataset estável: 70 IDs, 12 seções, 70 sinopses, 40/12/18 grupos (ou números intencionalmente atualizados).
 - [ ] Ordem recomendada e metodologia permanecem coerentes.
-- [ ] Filtros, busca, anos, notas, avaliações e datas funcionam.
+- [ ] Filtros e busca funcionam **e sobrevivem ao reload**; texto bruto, opção ativa e botão limpar estão sincronizados; anos, notas, avaliações e datas também funcionam.
 - [ ] Contadores, barras de progresso e celebrações usam critérios corretos.
 - [ ] Expansão de seção persistida; contador e linha inteira acionáveis; checkbox independente.
 - [ ] Aparência Claro/Escuro/OLED compartilhada nas quatro páginas, independente do OS; preferências e backups antigos migrados sem perda.
