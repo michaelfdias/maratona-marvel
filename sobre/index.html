@@ -1,19 +1,21 @@
 <!doctype html><html lang="pt-BR" data-theme="light"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#fafaf9"><script>
-/* Fonte única do tema: preferência explícita da home, nunca a aparência do iPhone. */
+/* Aparência compartilhada, inclusive em páginas restauradas pelo Safari.
+   theme prevalece; dark é legado apenas para migração de dados antigos. */
 (()=>{
   const key='marvel-display-v1';
+  const allowed=['light','dark','oled'];
   function syncTheme(){
-    let dark=false;
+    let theme='light';
     try{
       const stored=JSON.parse(localStorage.getItem(key)||'{}');
-      dark=stored&&stored.dark===true;
+      if(allowed.includes(stored?.theme))theme=stored.theme;
+      else if(stored?.dark===true)theme='dark';
     }catch(error){}
-    document.documentElement.dataset.theme=dark?'dark':'light';
+    document.documentElement.dataset.theme=theme;
     const meta=document.querySelector('meta[name="theme-color"]');
-    if(meta)meta.content=dark?'#141615':'#fafaf9';
+    if(meta)meta.content=theme==='oled'?'#000000':theme==='dark'?'#141615':'#fafaf9';
   }
   syncTheme();
-  // Safari pode restaurar páginas antigas pelo histórico sem reexecutar scripts.
   window.addEventListener('pageshow',syncTheme);
   window.addEventListener('storage',event=>{
     if(event.key===key||event.key===null)syncTheme();
@@ -31,7 +33,7 @@ html[data-theme="light"]{
   --brand:#a32034;--brand-dark:#8a1b2c;--hero-bg:#D11F28;
   --hero-fg:#fff;--hero-sub:rgba(255,255,255,.9);--red:#D11F28
 }
-</style><link rel="stylesheet" href="/maratona-marvel/shared-footer.css?v=nav-touch-fix-20261014"><script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token":"1a49458c22b84f23902cab09c972c71c"}'></script></head><body><div class="wrap"><a class="back" href="https://michaelfdias.github.io/maratona-marvel/?v=themefix-20261014" aria-label="Voltar à lista de filmes">← Voltar à maratona</a><header class="hero"><p class="kicker">Maratona Marvel</p><h1>Sobre a Maratona Marvel</h1><p>Uma forma simples de explorar o Universo Marvel, organizar uma maratona de filmes e guardar o progresso de cada sessão de cinema.</p></header><main>
+</style><link rel="stylesheet" href="/maratona-marvel/shared-footer.css?v=nav-touch-fix-20261014"><link rel="stylesheet" href="/maratona-marvel/oled-theme.css?v=oled-20261014"><script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token":"1a49458c22b84f23902cab09c972c71c"}'></script></head><body><div class="wrap"><a class="back" href="https://michaelfdias.github.io/maratona-marvel/?v=themefix-20261014" aria-label="Voltar à lista de filmes">← Voltar à maratona</a><header class="hero"><p class="kicker">Maratona Marvel</p><h1>Sobre a Maratona Marvel</h1><p>Uma forma simples de explorar o Universo Marvel, organizar uma maratona de filmes e guardar o progresso de cada sessão de cinema.</p></header><main>
 <section><h2>O que é a Maratona Marvel?</h2><p>A Maratona Marvel é um guia interativo e independente para quem deseja acompanhar os filmes do Universo Cinematográfico Marvel (MCU) e conhecer produções de outros universos cinematográficos que se relacionam com suas histórias.</p><p>A proposta é reunir uma seleção organizada e fácil de consultar, sem exigir cadastros ou transformar a experiência de assistir aos filmes em algo complicado. A lista principal contém 70 títulos entre filmes do MCU, complementos recomendados e extras opcionais.</p></section>
 <section><h2>O que você pode fazer no site</h2><ul><li><strong>Acompanhar a maratona:</strong> marcar filmes como assistidos e acompanhar o progresso por seção e no total.</li><li><strong>Escolher a abrangência:</strong> visualizar apenas o MCU, MCU com recomendados ou todos os filmes.</li><li><strong>Explorar duas ordenações:</strong> seguir a sequência recomendada ou ordenar os filmes por ano de lançamento.</li><li><strong>Consultar as histórias:</strong> ler comentários e expandir sinopses individuais.</li><li><strong>Personalizar a exibição:</strong> ajustar idioma dos títulos, tema, datas, avaliações e modo minimalista.</li><li><strong>Guardar seu histórico:</strong> exportar e importar os dados em JSON.</li></ul></section>
 <section><h2>Como funciona o progresso?</h2><p>As marcações de filmes assistidos, datas, avaliações e preferências são salvas no próprio navegador. Não é necessário criar uma conta. O progresso não é sincronizado automaticamente entre celulares e computadores; para levá-lo a outro navegador, use a exportação e a importação disponíveis na página principal.</p><div class="panel"><p><strong>Quer entender a sequência sugerida?</strong> Consulte a <a href="https://michaelfdias.github.io/maratona-marvel/ordem-recomendada/?v=themefix-20261014">metodologia da ordem recomendada</a> para saber por que os filmes dos X-Men e os antigos Homens-Aranha aparecem em blocos especiais.</p></div></section>
