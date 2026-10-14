@@ -103,7 +103,7 @@ Mesmo que o produto original seja monolítico, uma IA pode separar as responsabi
 
 - **Catálogo editorial**: matriz estática de seções e filmes; índice por ID; dicionário de sinopses.
 - **Persistência**: um serviço `Storage` com leitura defensiva, escrita, schema/versão, exportação e importação.
-- **Estado de apresentação**: preferências, filtro ativo, busca, agrupamento, sessões expandidas e sinopses temporárias.
+- **Estado de apresentação**: preferências (inclusive seletor triestado e migração do antigo `dark`), filtro ativo, busca, agrupamento, sessões expandidas e sinopses temporárias.
 - **Progresso**: funções puras para calcular vistos, percentuais, conclusão por seção, datas e avaliações.
 - **Renderização**: componentes de capa, métricas, filtros, lista, linha de filme, seções, modal, rodapé e páginas institucionais.
 - **Interação**: click/pointer/touch/keyboard, foco, modais, menu lateral, scroll e animação.
@@ -1104,7 +1104,7 @@ A celebração inicial usava confetes comuns e era considerada pouco memorável.
 Pilares:
 - Vermelho Marvel na capa, filtros ativos e acentos; evitar saturação em todos os elementos.
 - Fundo claro levemente aquecido e superfície branca para controles, em vez de cinza puro brilhante em excesso.
-- Tema escuro por escolha explícita com superfícies grafite/cinza-esverdeadas e contraste suficiente.
+- Temas escuro grafite e OLED preto absoluto como escolhas independentes, ambos com contraste suficiente.
 - Tipografia `Inter`/`system-ui`, títulos com peso e tracking controlados, textos de apoio menores e calmos.
 - Ícones SVG inline leves (claquete, película, controles, compartilhamento, seta) para evitar fonte de ícones remota e desalinhamentos.
 - Contornos discretos e arredondamentos coerentes; nenhum skeuomorfismo decorativo excessivo.
@@ -1380,6 +1380,7 @@ Explicar com clareza:
 | ADR-022 | Páginas institucionais separadas | Tudo em popovers na home | SEO, navegação, leitura editorial e privacidade. |
 | ADR-023 | Links dos filmes para busca pública | Player / link de streaming | Manter escopo legal e editorial. |
 | ADR-024 | Sinopses independentes e opt-in | Todos os textos abertos permanentemente | Densidade, legibilidade e spoilers. |
+| ADR-025 | Aparência em três temas (`light`, `dark`, `oled`) | Checkbox binário Escuro/Claro; detecção automática de OLED | Preto absoluto sem perder grafite, migração dos dados legados e consistência entre quatro rotas. |
 
 **Como usar os ADRs:** ao mudar uma decisão, explicar o evento, a nova alternativa, as implicações e os testes. Não eliminar o registro antigo como se nunca tivesse sido tentado.
 
@@ -1496,6 +1497,14 @@ Introdução do botão flutuante **Voltar ao topo** no canto inferior direito. R
 
 `README.md` para visão rápida e esta `docs/ESPECIFICACAO.md` como **documentação viva replicável por agentes**. Preserva decisões descartadas, não apenas estado atual, para que outras implementações não repitam caminhos rejeitados.
 
+### Etapa L — Tema OLED como terceiro modo de aparência
+
+O usuário solicitou **preto absoluto** para telas OLED sem abandonar o tema escuro grafite. O checkbox binário foi substituído pelo seletor **Aparência** (Claro, Escuro, OLED), com `oled-theme.css` compartilhado pelas quatro páginas, fundo da página e do rodapé `#000000`, controles quase pretos e capa vermelha preservada.
+
+**Compatibilidade deliberada:** a chave canônica passou a ser `marvel-display-v1.theme`, mas booleanos `dark` já existentes continuam aceitos na inicialização e ao importar backups antigos. A escolha permanece independente da configuração do iPhone.
+
+**Motivação:** oferecer uma alternativa visual adequada a painéis OLED sem presumir detecção de hardware, sem sacrificar acessibilidade e sem corrigir uma página quebrando outra.
+
 ---
 
 ## 19. Matriz de critérios de aceitação (para implementação ou regressão)
@@ -1582,8 +1591,8 @@ Os itens seguintes são **casos a testar**, não afirmações de que já tenham 
 | ID | Cenário / ação | Resultado esperado |
 | --- | --- | --- |
 | CFG-01 | Primeira visita, iPhone com tema do SO escuro | Site **claro** por padrão. |
-| CFG-02 | Ativar modo escuro na home | Home e páginas internas escuras. |
-| CFG-03 | Desativar modo escuro na home | Todas as páginas claras, mesmo com SO escuro. |
+| CFG-02 | Selecionar Escuro no campo Aparência | Home e páginas internas exibem fundo grafite, não preto absoluto. |
+| CFG-03 | Selecionar Claro no campo Aparência | Todas as páginas ficam claras, mesmo com SO escuro. |
 | CFG-04 | Navegar para uma página interna e voltar (Safari) | Tema sincronizado após `pageshow`. |
 | CFG-05 | Abrir modal de configurações | Título e controles acessíveis, sem destaque visual touch preso. |
 | CFG-06 | Fechar com Escape | Modal fecha e layout volta ao normal. |
@@ -1597,6 +1606,13 @@ Os itens seguintes são **casos a testar**, não afirmações de que já tenham 
 | CFG-14 | Acessibilidade: reduzir movimento | Scroll instantâneo, sem confetti animado; conclusão ainda comunicada. |
 | CFG-15 | Recarga após ajustar preferências | Preferências e dados íntegros. |
 | CFG-16 | Salvar JSON inválido em storage manualmente | Aplicação não quebra fatalmente; padrões seguros. |
+| CFG-17 | Selecionar OLED e navegar pelas quatro páginas | Página e rodapé usam preto absoluto; elementos interativos permanecem legíveis. |
+| CFG-18 | Selecionar OLED, atualizar e navegar pelo histórico Safari | O tema permanece OLED e a meta theme-color fica #000000. |
+| CFG-19 | Ler storage anterior com dark:true sem theme | Aparência migra para Escuro, sem ir para Claro/OLED. |
+| CFG-20 | Importar backup antigo dark:false/true | Seleciona Claro/Escuro respectivamente sem perder progresso. |
+| CFG-21 | Exportar tema OLED e importar em outra sessão | preferences.theme="oled" é preservado e aplicado. |
+| CFG-22 | Usar Apagar tudo no OLED | Aparência retorna a Claro. |
+| CFG-23 | Conferir interação no OLED | Modal, checkbox, filtros, drawer, links e rodapé conservam contraste e foco acessível. |
 
 ### 19.6 Backup e privacidade
 
@@ -1719,7 +1735,7 @@ assert shareURL.hasNoUserProgress
 
 Antes de alterar recursos do projeto existente:
 - Recontar 70 títulos e comparar IDs e ordem (snapshot);
-- Verificar renderização das 4 páginas e os 2 assets compartilhados;
+- Verificar renderização das 4 páginas e os 3 assets compartilhados (`shared-footer.css`, `oled-theme.css`, `back-to-top.js`);
 - Validar JS e CSS e não alterar cópias editoriais inadvertidamente;
 - Confirmar persistência de progresso e preferências em reload;
 - Confirmar que compartilhar não tem menu/Stories;
@@ -1895,7 +1911,7 @@ Estas possibilidades **não são requisitos aprovados**:
 - [ ] Filtros, busca, anos, notas, avaliações e datas funcionam.
 - [ ] Contadores, barras de progresso e celebrações usam critérios corretos.
 - [ ] Expansão de seção persistida; contador e linha inteira acionáveis; checkbox independente.
-- [ ] Tema claro/escuro compartilhado por todas as páginas, independente do OS.
+- [ ] Aparência Claro/Escuro/OLED compartilhada nas quatro páginas, independente do OS; preferências e backups antigos migrados sem perda.
 - [ ] Modal e drawer acessíveis; estilo de foco do Safari correto.
 - [ ] Modo minimalista funcional; sticky e voltar ao topo sem conflito.
 - [ ] Backup export/import e reset validados.
